@@ -13,18 +13,18 @@ import {
 
 function AdminTeamCard({ team, index, onUpdate, onReset }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
-  const percentage = Math.max(0, (team.purse / TOTAL_PURSE) * 100);
+  const percentage = (team.purse / TOTAL_PURSE) * 100;
   const [manualInput, setManualInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   const handleAdjust = (amount) => {
-    const newPurse = Math.max(0, Math.min(TOTAL_PURSE, team.purse + amount));
+    const newPurse = team.purse + amount;
     onUpdate(team.id, newPurse);
   };
 
   const handleManualSet = () => {
     const value = parseInt(manualInput, 10);
-    if (!isNaN(value) && value >= 0 && value <= TOTAL_PURSE) {
+    if (!isNaN(value)) {
       onUpdate(team.id, value);
       setManualInput("");
       setIsEditing(false);
@@ -75,7 +75,7 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
       {/* Current Purse Display */}
       <div className="mb-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">
         <div className="flex items-baseline justify-between">
-          <span className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+          <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${team.purse < 0 ? 'text-accent-red' : 'text-foreground'}`}>
             {formatCompactCurrency(team.purse)}
           </span>
           <span
@@ -97,8 +97,10 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
           <div
             className="h-full rounded-full transition-all duration-500 ease-out"
             style={{
-              width: `${percentage}%`,
-              background: `linear-gradient(90deg, ${color.accent}90, ${color.accent})`,
+              width: `${Math.max(0, percentage)}%`,
+              background: percentage < 0
+                ? 'linear-gradient(90deg, #ef444490, #ef4444)'
+                : `linear-gradient(90deg, ${color.accent}90, ${color.accent})`,
             }}
           />
         </div>
@@ -141,8 +143,6 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
           onFocus={() => setIsEditing(true)}
           onKeyDown={handleKeyDown}
           placeholder="Set amount..."
-          min="0"
-          max={TOTAL_PURSE}
           className="flex-1 px-3 py-2 text-xs sm:text-sm rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all duration-200"
         />
         <button

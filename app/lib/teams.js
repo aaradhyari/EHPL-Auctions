@@ -42,10 +42,12 @@ export function formatCurrency(amount) {
 }
 
 export function formatCompactCurrency(amount) {
-  if (amount >= 100000) {
-    return `₹${(amount / 100000).toFixed(2)}L`;
-  } else if (amount >= 1000) {
-    return `₹${(amount / 1000).toFixed(1)}K`;
+  const sign = amount < 0 ? "-" : "";
+  const abs = Math.abs(amount);
+  if (abs >= 100000) {
+    return `${sign}₹${(abs / 100000).toFixed(2)}L`;
+  } else if (abs >= 1000) {
+    return `${sign}₹${(abs / 1000).toFixed(1)}K`;
   }
-  return `₹${amount.toLocaleString("en-IN")}`;
+  return `${sign}₹${abs.toLocaleString("en-IN")}`;
 }

@@ -12,7 +12,7 @@ import {
 
 function TeamCard({ team, index, isUpdated }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
-  const percentage = Math.max(0, (team.purse / TOTAL_PURSE) * 100);
+  const percentage = (team.purse / TOTAL_PURSE) * 100;
   const spent = TOTAL_PURSE - team.purse;
 
   return (
@@ -51,7 +51,7 @@ function TeamCard({ team, index, isUpdated }) {
       <div className="mb-2 lg:mb-3">
         <p
           className={`text-lg sm:text-xl lg:text-3xl font-extrabold tracking-tight leading-none ${isUpdated ? "animate-count-update" : ""}`}
-          style={{ color: "#f0e6d3" }}
+          style={{ color: team.purse < 0 ? "#ef4444" : "#f0e6d3" }}
         >
           {formatCompactCurrency(team.purse)}
         </p>
@@ -66,8 +66,10 @@ function TeamCard({ team, index, isUpdated }) {
           <div
             className="h-full rounded-full transition-all duration-700 ease-out progress-shimmer"
             style={{
-              width: `${percentage}%`,
-              background: `linear-gradient(90deg, ${color.accent}80, ${color.accent}, ${color.accent}80)`,
+              width: `${Math.max(0, percentage)}%`,
+              backgroundImage: percentage < 0
+                ? 'linear-gradient(90deg, #ef444480, #ef4444, #ef444480)'
+                : `linear-gradient(90deg, ${color.accent}80, ${color.accent}, ${color.accent}80)`,
               backgroundSize: "200% 100%",
             }}
           />
