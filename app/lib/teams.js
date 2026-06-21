@@ -1,18 +1,18 @@
 export const TOTAL_PURSE = 1500000;
 
 export const DEFAULT_TEAMS = [
-  { id: 1, name: "Team Alpha", purse: TOTAL_PURSE },
-  { id: 2, name: "Team Bravo", purse: TOTAL_PURSE },
-  { id: 3, name: "Team Charlie", purse: TOTAL_PURSE },
-  { id: 4, name: "Team Delta", purse: TOTAL_PURSE },
-  { id: 5, name: "Team Echo", purse: TOTAL_PURSE },
-  { id: 6, name: "Team Foxtrot", purse: TOTAL_PURSE },
-  { id: 7, name: "Team Golf", purse: TOTAL_PURSE },
-  { id: 8, name: "Team Hotel", purse: TOTAL_PURSE },
-  { id: 9, name: "Team India", purse: TOTAL_PURSE },
-  { id: 10, name: "Team Juliet", purse: TOTAL_PURSE },
-  { id: 11, name: "Team Kilo", purse: TOTAL_PURSE },
-  { id: 12, name: "Team Lima", purse: TOTAL_PURSE },
+  { id: 1, name: "AGNIASTRA", purse: TOTAL_PURSE },
+  { id: 2, name: "BRAHMASTRA", purse: TOTAL_PURSE },
+  { id: 3, name: "CHAKRAVYUH", purse: TOTAL_PURSE },
+  { id: 4, name: "DHRUVA", purse: TOTAL_PURSE },
+  { id: 5, name: "KSHATRIYA", purse: TOTAL_PURSE },
+  { id: 6, name: "KURUKSHETRA", purse: TOTAL_PURSE },
+  { id: 7, name: "RAJTANTRA", purse: TOTAL_PURSE },
+  { id: 8, name: "RANBHOOMI", purse: TOTAL_PURSE },
+  { id: 9, name: "TRISHUL", purse: TOTAL_PURSE },
+  { id: 10, name: "SHOORVEER", purse: TOTAL_PURSE },
+  { id: 11, name: "SAMRAT", purse: TOTAL_PURSE },
+  { id: 12, name: "YODHA", purse: TOTAL_PURSE },
 ];
 
 export const TEAM_COLORS = [
