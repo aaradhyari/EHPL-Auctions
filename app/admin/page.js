@@ -10,6 +10,12 @@ import {
   formatCurrency,
   formatCompactCurrency,
 } from "../lib/teams";
+import {
+  PLAYERS_STORAGE_KEY,
+  CURRENT_PLAYER_KEY,
+  DEFAULT_PLAYERS,
+  GRADES,
+} from "../lib/players";
 
 function AdminTeamCard({ team, index, onUpdate, onReset }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
@@ -159,19 +165,36 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
 
 export default function AdminPage() {
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
+  const [players, setPlayers] = useState(DEFAULT_PLAYERS);
+  const [currentPlayer, setCurrentPlayer] = useState(null);
+  const [activeGrade, setActiveGrade] = useState("A");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage asynchronously to avoid synchronous setState warnings in useEffect
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setTeams(JSON.parse(stored));
+    const timer = setTimeout(() => {
+      try {
+        const storedTeams = localStorage.getItem(STORAGE_KEY);
+        if (storedTeams) {
+          setTeams(JSON.parse(storedTeams));
+        }
+        
+        const storedPlayers = localStorage.getItem(PLAYERS_STORAGE_KEY);
+        if (storedPlayers) {
+          setPlayers(JSON.parse(storedPlayers));
+        }
+
+        const storedCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
+        if (storedCurrent) {
+          setCurrentPlayer(JSON.parse(storedCurrent));
+        }
+      } catch (e) {
+        console.error("Failed to load initial state:", e);
       }
-    } catch (e) {
-      console.error("Failed to load teams:", e);
-    }
-    setIsLoaded(true);
+      setIsLoaded(true);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Save to localStorage whenever teams change
@@ -181,6 +204,28 @@ export default function AdminPage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newTeams));
     } catch (e) {
       console.error("Failed to save teams:", e);
+    }
+  }, []);
+
+  const savePlayers = useCallback((newPlayers) => {
+    setPlayers(newPlayers);
+    try {
+      localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(newPlayers));
+    } catch (e) {
+      console.error("Failed to save players:", e);
+    }
+  }, []);
+
+  const saveCurrentPlayer = useCallback((player) => {
+    setCurrentPlayer(player);
+    try {
+      if (player) {
+        localStorage.setItem(CURRENT_PLAYER_KEY, JSON.stringify(player));
+      } else {
+        localStorage.removeItem(CURRENT_PLAYER_KEY);
+      }
+    } catch (e) {
+      console.error("Failed to save current player:", e);
     }
   }, []);
 
@@ -207,6 +252,102 @@ export default function AdminPage() {
       saveTeams(DEFAULT_TEAMS);
     }
   }, [saveTeams]);
+
+  const handleSelectPlayer = useCallback((player) => {
+    const active = players.find(p => p.status === "in-auction");
+    if (active) {
+      alert(`Please resolve the active auction for ${active.name} before starting a new one.`);
+      return;
+    }
+
+    const updatedPlayers = players.map(p => 
+      p.id === player.id ? { ...p, status: "in-auction" } : p
+    );
+    savePlayers(updatedPlayers);
+    saveCurrentPlayer({ ...player, status: "in-auction" });
+  }, [players, savePlayers, saveCurrentPlayer]);
+
+  const handleMarkSold = useCallback(() => {
+    if (!currentPlayer) return;
+    const updatedPlayers = players.map(p => 
+      p.id === currentPlayer.id ? { ...p, status: "sold" } : p
+    );
+    savePlayers(updatedPlayers);
+    
+    // Temporarily save as sold to let presentation side show it
+    const soldPlayer = { ...currentPlayer, status: "sold" };
+    saveCurrentPlayer(soldPlayer);
+    
+    // Automatically clear current player after 5 seconds
+    setTimeout(() => {
+      try {
+        const latestCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
+        if (latestCurrent) {
+          const parsed = JSON.parse(latestCurrent);
+          if (parsed.id === soldPlayer.id && parsed.status === "sold") {
+            saveCurrentPlayer(null);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }, 5000);
+  }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
+
+  const handleMarkUnsold = useCallback(() => {
+    if (!currentPlayer) return;
+    const updatedPlayers = players.map(p => 
+      p.id === currentPlayer.id ? { ...p, status: "unsold" } : p
+    );
+    savePlayers(updatedPlayers);
+    
+    // Temporarily save as unsold to let presentation side show it
+    const unsoldPlayer = { ...currentPlayer, status: "unsold" };
+    saveCurrentPlayer(unsoldPlayer);
+    
+    // Automatically clear current player after 5 seconds
+    setTimeout(() => {
+      try {
+        const latestCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
+        if (latestCurrent) {
+          const parsed = JSON.parse(latestCurrent);
+          if (parsed.id === unsoldPlayer.id && parsed.status === "unsold") {
+            saveCurrentPlayer(null);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }, 5000);
+  }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
+
+  const handleCancelAuction = useCallback(() => {
+    if (!currentPlayer) return;
+    const updatedPlayers = players.map(p => 
+      p.id === currentPlayer.id ? { ...p, status: "available" } : p
+    );
+    savePlayers(updatedPlayers);
+    saveCurrentPlayer(null);
+  }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
+
+  const handleResetPlayer = useCallback((playerId) => {
+    const updatedPlayers = players.map(p => 
+      p.id === playerId ? { ...p, status: "available" } : p
+    );
+    savePlayers(updatedPlayers);
+    
+    if (currentPlayer && currentPlayer.id === playerId) {
+      saveCurrentPlayer(null);
+    }
+  }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
+
+  const handleResetAllPlayers = useCallback(() => {
+    if (window.confirm("Are you sure you want to reset ALL players status to available?")) {
+      const resetPlayers = DEFAULT_PLAYERS.map(p => ({ ...p, status: "available" }));
+      savePlayers(resetPlayers);
+      saveCurrentPlayer(null);
+    }
+  }, [savePlayers, saveCurrentPlayer]);
 
   // Summary stats
   const totalRemaining = teams.reduce((sum, t) => sum + t.purse, 0);
@@ -270,6 +411,186 @@ export default function AdminPage() {
           </div>
         </div>
       </header>
+
+      {/* Player Auction Control Panel */}
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="bg-card-bg border border-card-border rounded-xl p-4 sm:p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-card-border pb-4 mb-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-gradient-gold">
+                PLAYER AUCTION CONTROL
+              </h2>
+              <p className="text-xs text-muted">
+                Select players, manage active auctions, and mark players as sold
+              </p>
+            </div>
+            <button
+              onClick={handleResetAllPlayers}
+              className="self-start md:self-auto px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent-red/10 text-accent-red border border-accent-red/20 hover:bg-accent-red/25 active:scale-95 transition-all duration-150 cursor-pointer"
+            >
+              Reset All Players
+            </button>
+          </div>
+
+          {/* Active Player Status */}
+          <div className="mb-6 p-4 rounded-xl border border-white/[0.03] bg-white/[0.01]">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-3">
+              Active Auction State
+            </h3>
+            {currentPlayer ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-12 h-12 rounded-lg border border-gold/25 flex items-center justify-center font-black text-xl animate-slide-in"
+                    style={{
+                      background: GRADES[currentPlayer.grade]?.bgGradient || 'none',
+                      color: GRADES[currentPlayer.grade]?.color || '#ffffff',
+                      borderColor: GRADES[currentPlayer.grade]?.border || 'transparent',
+                    }}
+                  >
+                    {currentPlayer.grade}
+                  </div>
+                  <div>
+                    <h4 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+                      {currentPlayer.name}
+                    </h4>
+                    <span 
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider mt-1 inline-block"
+                      style={{
+                        color: GRADES[currentPlayer.grade]?.color,
+                        borderColor: GRADES[currentPlayer.grade]?.border,
+                        background: `${GRADES[currentPlayer.grade]?.color}10`,
+                      }}
+                    >
+                      {GRADES[currentPlayer.grade]?.label}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleMarkSold}
+                    className="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-accent-green text-black hover:bg-accent-green/90 active:scale-95 transition-all duration-150 cursor-pointer"
+                  >
+                    Mark Sold
+                  </button>
+                  <button
+                    onClick={handleMarkUnsold}
+                    className="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/25 hover:bg-orange-500/20 active:scale-95 transition-all duration-150 cursor-pointer"
+                  >
+                    Mark Unsold
+                  </button>
+                  <button
+                    onClick={handleCancelAuction}
+                    className="px-4 py-2 text-xs sm:text-sm font-bold rounded-lg bg-white/10 text-foreground border border-white/10 hover:bg-white/20 active:scale-95 transition-all duration-150 cursor-pointer"
+                  >
+                    Cancel / Reset
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4 border border-dashed border-white/10 rounded-lg text-muted text-xs">
+                No active player in auction. Choose a player below to put them in the ring.
+              </div>
+            )}
+          </div>
+
+          {/* Grade Tabs */}
+          <div className="flex gap-2 border-b border-card-border pb-3 mb-4">
+            {["A", "B", "C"].map((gradeKey) => {
+              const active = activeGrade === gradeKey;
+              const gradeInfo = GRADES[gradeKey];
+              return (
+                <button
+                  key={gradeKey}
+                  onClick={() => setActiveGrade(gradeKey)}
+                  className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer border ${
+                    active 
+                      ? "text-black border-transparent" 
+                      : "text-muted hover:text-foreground border-white/[0.04] bg-white/[0.01]"
+                  }`}
+                  style={{
+                    backgroundColor: active ? gradeInfo.color : "transparent",
+                  }}
+                >
+                  {gradeInfo.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Player Grid by Grade */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
+            {players
+              .filter((p) => p.grade === activeGrade)
+              .map((player) => {
+                const statusColors = {
+                  available: "bg-accent-green/10 text-accent-green border-accent-green/20",
+                  "in-auction": "bg-gold/10 text-gold border-gold/20 animate-pulse",
+                  sold: "bg-accent-red/10 text-accent-red border-accent-red/20",
+                  unsold: "bg-orange-500/10 text-orange-400 border border-orange-500/20",
+                };
+                
+                return (
+                  <div 
+                    key={player.id}
+                    className="flex flex-col justify-between border border-white/[0.04] bg-white/[0.01] rounded-lg p-3 hover:border-white/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div 
+                        className="w-9 h-9 rounded-md border flex items-center justify-center text-sm font-black shrink-0"
+                        style={{
+                          borderColor: GRADES[player.grade].border,
+                          color: GRADES[player.grade].color,
+                          background: `${GRADES[player.grade].color}10`,
+                        }}
+                      >
+                        {player.grade}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
+                          {player.name}
+                        </h4>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase mt-1 inline-block ${statusColors[player.status]}`}>
+                          {player.status === "in-auction" ? "Live" : player.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5">
+                      {player.status === "available" && (
+                        <button
+                          onClick={() => handleSelectPlayer(player)}
+                          disabled={!!currentPlayer}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-gold/10 text-gold border border-gold/25 hover:bg-gold/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
+                        >
+                          Put to Auction
+                        </button>
+                      )}
+                      {player.status === "in-auction" && (
+                        <button
+                          onClick={handleCancelAuction}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-accent-red/10 text-accent-red border border-accent-red/25 hover:bg-accent-red/20 transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      {(player.status === "sold" || player.status === "unsold") && (
+                        <button
+                          onClick={() => handleResetPlayer(player.id)}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted-foreground border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer"
+                        >
+                          Reset Status
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      </section>
 
       {/* Team Grid */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
