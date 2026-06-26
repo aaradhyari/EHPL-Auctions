@@ -9,7 +9,7 @@ import {
   formatCurrency,
   formatCompactCurrency,
 } from "./lib/teams";
-import { CURRENT_PLAYER_KEY, GRADES, getPlayerImagePath } from "./lib/players";
+import { CURRENT_PLAYER_KEY, GRADES, getPlayerImagePath, getBasePrice } from "./lib/players";
 
 function TeamCard({ team, index, isUpdated }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
@@ -68,9 +68,10 @@ function TeamCard({ team, index, isUpdated }) {
             className="h-full rounded-full transition-all duration-700 ease-out progress-shimmer"
             style={{
               width: `${Math.max(0, percentage)}%`,
-              backgroundImage: percentage < 0
-                ? 'linear-gradient(90deg, #ef444480, #ef4444, #ef444480)'
-                : `linear-gradient(90deg, ${color.accent}80, ${color.accent}, ${color.accent}80)`,
+              backgroundImage:
+                percentage < 0
+                  ? 'linear-gradient(90deg, #ef444480, #ef4444, #ef444480)'
+                  : `linear-gradient(90deg, ${color.accent}80, ${color.accent}, ${color.accent}80)`,
               backgroundSize: "200% 100%",
             }}
           />
@@ -89,22 +90,20 @@ function TeamCard({ team, index, isUpdated }) {
 }
 
 function PlayerCard({ player }) {
-  const [imgError, setImgError] = useState(false);
+  const grade = GRADES[player?.grade] || GRADES.A;
 
   if (!player) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center border border-white/10 rounded-2xl bg-card-bg/40 backdrop-blur-sm p-6 text-center relative overflow-hidden h-full min-h-[400px]">
-        {/* Animated grid lines behind */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] opacity-30" />
         <div className="absolute w-[250px] h-[250px] bg-gold/5 rounded-full blur-3xl" />
-        
-        {/* Sleek icon / badge */}
+
         <div className="relative mb-6 w-20 h-20 rounded-full border border-gold/30 bg-gold/5 flex items-center justify-center animate-pulse">
           <svg className="w-10 h-10 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        
+
         <h3 className="text-xl font-bold text-gradient-gold uppercase tracking-wider mb-2">
           Waiting for Auction
         </h3>
@@ -115,40 +114,138 @@ function PlayerCard({ player }) {
     );
   }
 
-  const grade = GRADES[player.grade] || GRADES.A;
-  const imagePath = getPlayerImagePath(player);
-  
-  const statusColors = {
-    available: "bg-accent-green/10 text-accent-green border-accent-green/30",
-    "in-auction": "bg-gold/10 text-gold border-gold/30 animate-pulse",
-    sold: "bg-accent-red/10 text-accent-red border-accent-red/30",
-    unsold: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+  const basePrice = getBasePrice(player);
+  const activityColors = {
+    cricket: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    football: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+    basketball: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+    badminton: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+    tennis: "bg-lime-500/10 text-lime-400 border-lime-500/30",
+    hockey: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+    default: "bg-white/5 text-foreground border-white/10",
   };
 
+  const activity = player.activity || "N/A";
+
   return (
-    <div 
-      className={`flex-1 flex flex-col justify-between rounded-2xl border bg-gradient-to-b from-[#12121a] to-[#0a0a0f] backdrop-blur-sm p-4 sm:p-6 lg:p-8 transition-all duration-500 overflow-hidden relative ${
+    <div
+      className={`flex-1 flex flex-col justify-between rounded-3xl border bg-gradient-to-br from-[#12121a] via-[#0d0d14] to-[#0a0a0f] backdrop-blur-xl p-5 sm:p-7 lg:p-9 transition-all duration-500 overflow-hidden relative ${
         player.status === "in-auction" ? "player-panel-glow-active" : "player-panel-glow"
       }`}
       style={{
-        borderColor: `${grade.color}40`,
+        borderColor: `${grade.color}35`,
       }}
     >
-      {/* Announcement Overlay */}
+      {/* Ambient glow */}
+      <div
+        className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px] opacity-20 pointer-events-none"
+        style={{ background: grade.color }}
+      />
+      <div
+        className="absolute -bottom-20 -left-20 w-48 h-48 rounded-full blur-[60px] opacity-10 pointer-events-none"
+        style={{ background: grade.color }}
+      />
+
+      {/* Top accent line */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: `linear-gradient(90deg, transparent, ${grade.color}, transparent)` }}
+      />
+
+      {/* Grade Badge - Corner (top-right) */}
+      <div className="absolute top-5 right-5 sm:top-7 sm:right-7 z-20">
+        <div
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 flex flex-col items-center justify-center shadow-lg backdrop-blur-md"
+          style={{
+            borderColor: grade.border,
+            background: `${grade.color}20`,
+            boxShadow: `0 0 25px ${grade.color}30`,
+          }}
+        >
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest" style={{ color: grade.color }}>
+            Grade
+          </span>
+          <span className="text-xl sm:text-2xl font-black leading-none" style={{ color: grade.color }}>
+            {player.grade}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 flex-1 flex flex-col justify-center">
+        {/* Player Name - Hero */}
+        <div className="mb-6 sm:mb-8">
+          <p className="text-[10px] sm:text-xs text-muted uppercase tracking-[0.2em] mb-1.5">Player Name</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight uppercase leading-none break-words">
+            {player.name}
+          </h2>
+        </div>
+
+        {/* Divider */}
+        <div
+          className="w-full h-[1px] mb-6 sm:mb-8 opacity-30"
+          style={{ background: `linear-gradient(90deg, ${grade.color}60, transparent)` }}
+        />
+
+        {/* Info Grid: Activity + Base Price */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          {/* Activity Card */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Activity</p>
+            <p className="text-xl sm:text-2xl font-black tracking-wide uppercase" style={{ color: grade.color }}>
+              {activity}
+            </p>
+          </div>
+
+          {/* Base Price Card */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Base Price</p>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-lg sm:text-xl font-black tracking-tight" style={{ color: grade.color }}>
+                ₹
+              </span>
+              <span className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: grade.color }}>
+                {basePrice.toLocaleString("en-IN")}
+              </span>
+            </div>
+            <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-wider mt-1">
+              {grade.label} Tier
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Bidding Indicator - Bottom Left Corner */}
+      {player.status === "in-auction" && (
+        <div className="absolute bottom-5 left-5 sm:bottom-7 sm:left-7 z-20">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent-green/10 border border-accent-green/30 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-accent-green animate-ping" />
+            <span className="text-[10px] sm:text-xs text-accent-green font-bold uppercase tracking-widest">
+              Live Bidding
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Sold/Unsold Announcement Overlay */}
       {(player.status === "sold" || player.status === "unsold") && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in">
-          {/* Animated pulsing light background */}
-          <div className={`absolute w-[300px] h-[300px] rounded-full blur-[100px] opacity-40 animate-pulse ${
-            player.status === "sold" ? "bg-accent-green" : "bg-accent-red"
-          }`} />
+          <div
+            className={`absolute w-[300px] h-[300px] rounded-full blur-[100px] opacity-40 animate-pulse ${
+              player.status === "sold" ? "bg-accent-green" : "bg-accent-red"
+            }`}
+          />
 
           <div className="text-center z-10 p-6 flex flex-col items-center justify-center animate-scale-up-bounce">
-            {/* Status Icon */}
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 border-2 ${
-              player.status === "sold" 
-                ? "bg-accent-green/10 text-accent-green border-accent-green/30" 
-                : "bg-accent-red/10 text-accent-red border-accent-red/30"
-            }`}>
+            <div
+              className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 border-2 ${
+                player.status === "sold"
+                  ? "bg-accent-green/10 text-accent-green border-accent-green/30"
+                  : "bg-accent-red/10 text-accent-red border-accent-red/30"
+              }`}
+            >
               {player.status === "sold" ? (
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -160,132 +257,26 @@ function PlayerCard({ player }) {
               )}
             </div>
 
-            {/* Announcement Text */}
-            <h2 className={`text-5xl sm:text-6xl font-black uppercase tracking-widest leading-none mb-4 ${
-              player.status === "sold" ? "text-accent-green glow-green" : "text-accent-red glow-red"
-            }`}>
+            <h2
+              className={`text-5xl sm:text-6xl font-black uppercase tracking-widest leading-none mb-4 ${
+                player.status === "sold" ? "text-accent-green glow-green" : "text-accent-red glow-red"
+              }`}
+            >
               {player.status === "sold" ? "SOLD" : "UNSOLD"}
             </h2>
 
             <div className="w-20 h-1 bg-white/20 my-4 rounded-full" />
 
-            <p className="text-[10px] sm:text-xs text-muted uppercase tracking-widest mb-1">
-              Player Name
-            </p>
+            <p className="text-[10px] sm:text-xs text-muted uppercase tracking-widest mb-1">Player Name</p>
             <h3 className="text-xl sm:text-2xl font-bold text-foreground truncate max-w-[320px]">
               {player.name}
             </h3>
-
             <p className="text-xs font-bold text-gold uppercase mt-3 px-3 py-1 rounded-full bg-gold/10 border border-gold/25">
               Grade {player.grade}
             </p>
           </div>
         </div>
       )}
-      {/* Top golden light line */}
-      <div 
-        className="absolute top-0 left-0 right-0 h-[3px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${grade.color}, transparent)` }}
-      />
-      
-      {/* Header Info */}
-      <div className="flex items-center justify-between mb-4">
-        <span 
-          className="text-xs sm:text-sm font-bold px-3 py-1 rounded-full border tracking-wide uppercase"
-          style={{
-            color: grade.color,
-            borderColor: grade.border,
-            background: `${grade.color}15`,
-            textShadow: `0 0 10px ${grade.color}40`,
-          }}
-        >
-          {grade.label}
-        </span>
-        <span className={`text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-md border uppercase tracking-wider ${statusColors[player.status] || ''}`}>
-          {player.status === "in-auction" ? "Live Auction" : player.status}
-        </span>
-      </div>
-
-      {/* Main Display: PNG Card or Fallback */}
-      <div className="flex-1 flex flex-col items-center justify-center my-2 min-h-[320px] relative">
-        {!imgError && imagePath ? (
-          <div className="relative w-full h-full min-h-[320px] max-h-[580px] flex items-center justify-center transition-all duration-300">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={imagePath} 
-              alt={player.name}
-              onError={() => setImgError(true)}
-              className="max-w-full max-h-full object-contain rounded-xl drop-shadow-[0_10px_25px_rgba(0,0,0,0.7)] hover:scale-[1.02] transition-transform duration-300"
-            />
-          </div>
-        ) : (
-          /* Fallback UI: Beautiful virtual card */
-          <div 
-            className="w-full max-w-[380px] aspect-[3/4] rounded-xl border flex flex-col justify-between p-6 relative overflow-hidden transition-all duration-300"
-            style={{
-              borderColor: `${grade.color}30`,
-              background: `radial-gradient(circle at 50% 30%, ${grade.color}15 0%, #12121a 70%)`,
-            }}
-          >
-            {/* Hologram or card pattern */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:15px_15px] opacity-40 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/2 rounded-full blur-xl pointer-events-none" />
-            
-            {/* Card Grade Logo watermarked */}
-            <div 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl sm:text-9xl font-extrabold select-none opacity-5 pointer-events-none"
-              style={{ color: grade.color }}
-            >
-              {player.grade}
-            </div>
-
-            {/* Silhouette or placeholder shape */}
-            <div className="flex-1 flex items-center justify-center relative min-h-0">
-              <svg 
-                className="w-36 h-36 opacity-10" 
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ color: grade.color }}
-              >
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
-              </svg>
-            </div>
-
-            {/* Bottom player info on the card */}
-            <div className="text-center mt-3 z-10">
-              <div 
-                className="text-[10px] font-bold uppercase tracking-widest mb-0.5"
-                style={{ color: grade.color }}
-              >
-                {grade.label} Pool
-              </div>
-              <h4 className="text-lg sm:text-xl font-extrabold text-foreground tracking-wide truncate">
-                {player.name}
-              </h4>
-              <div className="w-12 h-0.5 mx-auto my-1.5 opacity-40" style={{ backgroundColor: grade.color }} />
-              <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider block">
-                EHPL Season
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Footer Info */}
-      <div className="mt-4 pt-3 border-t border-white/[0.04] text-center">
-        <p className="text-[10px] sm:text-xs text-muted uppercase tracking-wider">Player Name</p>
-        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground tracking-wide truncate">
-          {player.name}
-        </p>
-        {player.status === "in-auction" && (
-          <div className="mt-2 flex items-center justify-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-accent-green animate-ping" />
-            <span className="text-[10px] sm:text-xs text-accent-green font-bold uppercase tracking-widest">
-              Bidding Active
-            </span>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -302,7 +293,6 @@ export default function DisplayPage() {
       if (stored) {
         const parsed = JSON.parse(stored);
         setTeams((prev) => {
-          // Detect which teams changed
           const newUpdated = new Set();
           prev.forEach((t) => {
             const updated = parsed.find((p) => p.id === t.id);
@@ -336,13 +326,11 @@ export default function DisplayPage() {
   }, []);
 
   useEffect(() => {
-    // Initial load asynchronously to avoid synchronous setState lint warnings on mount
     const timer = setTimeout(() => {
       loadTeams();
       loadCurrentPlayer();
     }, 0);
 
-    // Listen for storage changes from admin page
     const handleStorage = (e) => {
       if (e.key === STORAGE_KEY) {
         loadTeams();
@@ -354,7 +342,6 @@ export default function DisplayPage() {
 
     window.addEventListener("storage", handleStorage);
 
-    // Also poll for same-tab changes (localStorage events don't fire in same tab)
     const interval = setInterval(() => {
       loadTeams();
       loadCurrentPlayer();
@@ -405,7 +392,7 @@ export default function DisplayPage() {
             <div className="text-right">
               <p className="text-[10px] sm:text-xs text-muted uppercase tracking-wider">Remaining</p>
               <p className="text-sm sm:text-base lg:text-lg font-bold text-gradient-gold">
-                {formatCurrency(totalRemaining)}
+                {formatCompactCurrency(totalRemaining)}
               </p>
             </div>
           </div>
@@ -443,7 +430,7 @@ export default function DisplayPage() {
             EHPL Auction Dashboard • {teams.length} Teams
           </p>
           <p className="text-[10px] sm:text-xs text-muted">
-            Purse per team: {formatCurrency(TOTAL_PURSE)}
+            Purse per team: {formatCompactCurrency(TOTAL_PURSE)}
           </p>
         </div>
       </footer>

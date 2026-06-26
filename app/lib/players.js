@@ -29,37 +29,37 @@ export const GRADES = {
   },
 };
 
-// Default player pool — update names as needed, drop matching PNGs in public/players/<grade>/
+// Default player pool — update names and activity as needed
 export const DEFAULT_PLAYERS = [
   // Grade A players
-  { id: "a1", name: "Player A1", grade: "A", image: "player-a1.png", status: "available" },
-  { id: "a2", name: "Player A2", grade: "A", image: "player-a2.png", status: "available" },
-  { id: "a3", name: "Player A3", grade: "A", image: "player-a3.png", status: "available" },
-  { id: "a4", name: "Player A4", grade: "A", image: "player-a4.png", status: "available" },
-  { id: "a5", name: "Player A5", grade: "A", image: "player-a5.png", status: "available" },
-  { id: "a6", name: "Player A6", grade: "A", image: "player-a6.png", status: "available" },
-  { id: "a7", name: "Player A7", grade: "A", image: "player-a7.png", status: "available" },
-  { id: "a8", name: "Player A8", grade: "A", image: "player-a8.png", status: "available" },
+  { id: "a1", name: "Player A1", grade: "A", activity: "Cricket", image: "player-a1.png", status: "available" },
+  { id: "a2", name: "Player A2", grade: "A", activity: "Football", image: "player-a2.png", status: "available" },
+  { id: "a3", name: "Player A3", grade: "A", activity: "Basketball", image: "player-a3.png", status: "available" },
+  { id: "a4", name: "Player A4", grade: "A", activity: "Cricket", image: "player-a4.png", status: "available" },
+  { id: "a5", name: "Player A5", grade: "A", activity: "Football", image: "player-a5.png", status: "available" },
+  { id: "a6", name: "Player A6", grade: "A", activity: "Basketball", image: "player-a6.png", status: "available" },
+  { id: "a7", name: "Player A7", grade: "A", activity: "Cricket", image: "player-a7.png", status: "available" },
+  { id: "a8", name: "Player A8", grade: "A", activity: "Badminton", image: "player-a8.png", status: "available" },
 
   // Grade B players
-  { id: "b1", name: "Player B1", grade: "B", image: "player-b1.png", status: "available" },
-  { id: "b2", name: "Player B2", grade: "B", image: "player-b2.png", status: "available" },
-  { id: "b3", name: "Player B3", grade: "B", image: "player-b3.png", status: "available" },
-  { id: "b4", name: "Player B4", grade: "B", image: "player-b4.png", status: "available" },
-  { id: "b5", name: "Player B5", grade: "B", image: "player-b5.png", status: "available" },
-  { id: "b6", name: "Player B6", grade: "B", image: "player-b6.png", status: "available" },
-  { id: "b7", name: "Player B7", grade: "B", image: "player-b7.png", status: "available" },
-  { id: "b8", name: "Player B8", grade: "B", image: "player-b8.png", status: "available" },
+  { id: "b1", name: "Player B1", grade: "B", activity: "Football", image: "player-b1.png", status: "available" },
+  { id: "b2", name: "Player B2", grade: "B", activity: "Cricket", image: "player-b2.png", status: "available" },
+  { id: "b3", name: "Player B3", grade: "B", activity: "Tennis", image: "player-b3.png", status: "available" },
+  { id: "b4", name: "Player B4", grade: "B", activity: "Hockey", image: "player-b4.png", status: "available" },
+  { id: "b5", name: "Player B5", grade: "B", activity: "Football", image: "player-b5.png", status: "available" },
+  { id: "b6", name: "Player B6", grade: "B", activity: "Basketball", image: "player-b6.png", status: "available" },
+  { id: "b7", name: "Player B7", grade: "B", activity: "Cricket", image: "player-b7.png", status: "available" },
+  { id: "b8", name: "Player B8", grade: "B", activity: "Tennis", image: "player-b8.png", status: "available" },
 
   // Grade C players
-  { id: "c1", name: "Player C1", grade: "C", image: "player-c1.png", status: "available" },
-  { id: "c2", name: "Player C2", grade: "C", image: "player-c2.png", status: "available" },
-  { id: "c3", name: "Player C3", grade: "C", image: "player-c3.png", status: "available" },
-  { id: "c4", name: "Player C4", grade: "C", image: "player-c4.png", status: "available" },
-  { id: "c5", name: "Player C5", grade: "C", image: "player-c5.png", status: "available" },
-  { id: "c6", name: "Player C6", grade: "C", image: "player-c6.png", status: "available" },
-  { id: "c7", name: "Player C7", grade: "C", image: "player-c7.png", status: "available" },
-  { id: "c8", name: "Player C8", grade: "C", image: "player-c8.png", status: "available" },
+  { id: "c1", name: "Player C1", grade: "C", activity: "Cricket", image: "player-c1.png", status: "available" },
+  { id: "c2", name: "Player C2", grade: "C", activity: "Football", image: "player-c2.png", status: "available" },
+  { id: "c3", name: "Player C3", grade: "C", activity: "Basketball", image: "player-c3.png", status: "available" },
+  { id: "c4", name: "Player C4", grade: "C", activity: "Badminton", image: "player-c4.png", status: "available" },
+  { id: "c5", name: "Player C5", grade: "C", activity: "Tennis", image: "player-c5.png", status: "available" },
+  { id: "c6", name: "Player C6", grade: "C", activity: "Hockey", image: "player-c6.png", status: "available" },
+  { id: "c7", name: "Player C7", grade: "C", activity: "Cricket", image: "player-c7.png", status: "available" },
+  { id: "c8", name: "Player C8", grade: "C", activity: "Football", image: "player-c8.png", status: "available" },
 ];
 
 export const PLAYERS_STORAGE_KEY = "ehpl-auction-players";
@@ -84,4 +84,16 @@ export function groupPlayersByGrade(players) {
     B: players.filter((p) => p.grade === "B"),
     C: players.filter((p) => p.grade === "C"),
   };
+}
+
+/**
+ * Get base price for a player based on their grade
+ */
+export function getBasePrice(player) {
+  const basePrices = {
+    A: 20000,
+    B: 10000,
+    C: 5000,
+  };
+  return basePrices[player.grade] || 0;
 }
