@@ -18,15 +18,6 @@ export const GRADES = {
     bgGradient: "linear-gradient(135deg, #94a3b820, #64748b10)",
     border: "#94a3b840",
   },
-  C: {
-    label: "Grade C",
-    folder: "grade-c",
-    color: "#cd7f32",
-    colorLight: "#daa06d",
-    colorDark: "#a0522d",
-    bgGradient: "linear-gradient(135deg, #cd7f3220, #a0522d10)",
-    border: "#cd7f3240",
-  },
 };
 
 // Default player pool — update names and activity as needed
@@ -51,15 +42,7 @@ export const DEFAULT_PLAYERS = [
   { id: "b7", name: "Player B7", grade: "B", activity: "Cricket", image: "player-b7.png", status: "available" },
   { id: "b8", name: "Player B8", grade: "B", activity: "Tennis", image: "player-b8.png", status: "available" },
 
-  // Grade C players
-  { id: "c1", name: "Player C1", grade: "C", activity: "Cricket", image: "player-c1.png", status: "available" },
-  { id: "c2", name: "Player C2", grade: "C", activity: "Football", image: "player-c2.png", status: "available" },
-  { id: "c3", name: "Player C3", grade: "C", activity: "Basketball", image: "player-c3.png", status: "available" },
-  { id: "c4", name: "Player C4", grade: "C", activity: "Badminton", image: "player-c4.png", status: "available" },
-  { id: "c5", name: "Player C5", grade: "C", activity: "Tennis", image: "player-c5.png", status: "available" },
-  { id: "c6", name: "Player C6", grade: "C", activity: "Hockey", image: "player-c6.png", status: "available" },
-  { id: "c7", name: "Player C7", grade: "C", activity: "Cricket", image: "player-c7.png", status: "available" },
-  { id: "c8", name: "Player C8", grade: "C", activity: "Football", image: "player-c8.png", status: "available" },
+
 ];
 
 export const PLAYERS_STORAGE_KEY = "ehpl-auction-players";
@@ -82,7 +65,6 @@ export function groupPlayersByGrade(players) {
   return {
     A: players.filter((p) => p.grade === "A"),
     B: players.filter((p) => p.grade === "B"),
-    C: players.filter((p) => p.grade === "C"),
   };
 }
 
@@ -93,7 +75,6 @@ export function getBasePrice(player) {
   const basePrices = {
     A: 20000,
     B: 10000,
-    C: 5000,
   };
   return basePrices[player.grade] || 0;
 }

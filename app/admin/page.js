@@ -21,6 +21,7 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
   const percentage = (team.purse / TOTAL_PURSE) * 100;
   const [manualInput, setManualInput] = useState("");
+  const [minusInput, setMinusInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   const handleAdjust = (amount) => {
@@ -37,11 +38,26 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
     }
   };
 
+  const handleManualMinus = () => {
+    const value = parseInt(minusInput, 10);
+    if (!isNaN(value)) {
+      onUpdate(team.id, team.purse - value);
+      setMinusInput("");
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleManualSet();
     if (e.key === "Escape") {
       setManualInput("");
       setIsEditing(false);
+    }
+  };
+
+  const handleMinusKeyDown = (e) => {
+    if (e.key === "Enter") handleManualMinus();
+    if (e.key === "Escape") {
+      setMinusInput("");
     }
   };
 
@@ -140,24 +156,43 @@ function AdminTeamCard({ team, index, onUpdate, onReset }) {
         </button>
       </div>
 
-      {/* Manual Input */}
-      <div className="flex gap-2">
-        <input
-          type="number"
-          value={manualInput}
-          onChange={(e) => setManualInput(e.target.value)}
-          onFocus={() => setIsEditing(true)}
-          onKeyDown={handleKeyDown}
-          placeholder="Set amount..."
-          className="flex-1 px-3 py-2 text-xs sm:text-sm rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all duration-200"
-        />
-        <button
-          onClick={handleManualSet}
-          disabled={!manualInput}
-          className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-gold/15 text-gold border border-gold/25 hover:bg-gold/25 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150 cursor-pointer"
-        >
-          Set
-        </button>
+      {/* Manual Inputs */}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            onFocus={() => setIsEditing(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Set amount..."
+            className="flex-1 px-3 py-2 text-xs sm:text-sm rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all duration-200"
+          />
+          <button
+            onClick={handleManualSet}
+            disabled={!manualInput}
+            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-gold/15 text-gold border border-gold/25 hover:bg-gold/25 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150 cursor-pointer w-[70px] text-center"
+          >
+            Set
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={minusInput}
+            onChange={(e) => setMinusInput(e.target.value)}
+            onKeyDown={handleMinusKeyDown}
+            placeholder="Minus amount..."
+            className="flex-1 px-3 py-2 text-xs sm:text-sm rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent-red/50 focus:ring-1 focus:ring-accent-red/30 transition-all duration-200"
+          />
+          <button
+            onClick={handleManualMinus}
+            disabled={!minusInput}
+            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-accent-red/10 text-accent-red border border-accent-red/20 hover:bg-accent-red/20 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all duration-150 cursor-pointer w-[70px] text-center"
+          >
+            Minus
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -168,6 +203,7 @@ export default function AdminPage() {
   const [players, setPlayers] = useState(DEFAULT_PLAYERS);
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [activeGrade, setActiveGrade] = useState("A");
+  const [queue, setQueue] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage asynchronously to avoid synchronous setState warnings in useEffect
@@ -181,12 +217,25 @@ export default function AdminPage() {
         
         const storedPlayers = localStorage.getItem(PLAYERS_STORAGE_KEY);
         if (storedPlayers) {
-          setPlayers(JSON.parse(storedPlayers));
+          const parsedPlayers = JSON.parse(storedPlayers).filter(p => GRADES[p.grade]);
+          setPlayers(parsedPlayers);
+        }
+        
+        const storedQueue = localStorage.getItem("ehpl-auction-queue");
+        if (storedQueue) {
+          const parsedQueue = JSON.parse(storedQueue).filter(p => GRADES[p.grade]);
+          setQueue(parsedQueue);
         }
 
         const storedCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
         if (storedCurrent) {
-          setCurrentPlayer(JSON.parse(storedCurrent));
+          const parsedCurrent = JSON.parse(storedCurrent);
+          if (GRADES[parsedCurrent.grade]) {
+            setCurrentPlayer(parsedCurrent);
+          } else {
+            setCurrentPlayer(null);
+            localStorage.removeItem(CURRENT_PLAYER_KEY);
+          }
         }
       } catch (e) {
         console.error("Failed to load initial state:", e);
@@ -267,6 +316,36 @@ export default function AdminPage() {
     saveCurrentPlayer({ ...player, status: "in-auction" });
   }, [players, savePlayers, saveCurrentPlayer]);
 
+  const handleAddToQueue = useCallback((player) => {
+    const updatedPlayers = players.map(p => 
+      p.id === player.id ? { ...p, status: "queued" } : p
+    );
+    savePlayers(updatedPlayers);
+    
+    const newQueue = [...queue, { ...player, status: "queued" }];
+    setQueue(newQueue);
+    try {
+      localStorage.setItem("ehpl-auction-queue", JSON.stringify(newQueue));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [players, queue, savePlayers]);
+
+  const handleRemoveFromQueue = useCallback((playerId) => {
+    const updatedPlayers = players.map(p => 
+      p.id === playerId ? { ...p, status: "available" } : p
+    );
+    savePlayers(updatedPlayers);
+    
+    const newQueue = queue.filter(p => p.id !== playerId);
+    setQueue(newQueue);
+    try {
+      localStorage.setItem("ehpl-auction-queue", JSON.stringify(newQueue));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [players, queue, savePlayers]);
+
   const handleMarkSold = useCallback(() => {
     if (!currentPlayer) return;
     const updatedPlayers = players.map(p => 
@@ -278,14 +357,36 @@ export default function AdminPage() {
     const soldPlayer = { ...currentPlayer, status: "sold" };
     saveCurrentPlayer(soldPlayer);
     
-    // Automatically clear current player after 5 seconds
+    // Automatically clear or load next player from queue after 5 seconds
     setTimeout(() => {
       try {
         const latestCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
         if (latestCurrent) {
           const parsed = JSON.parse(latestCurrent);
           if (parsed.id === soldPlayer.id && parsed.status === "sold") {
-            saveCurrentPlayer(null);
+            const storedQueue = localStorage.getItem("ehpl-auction-queue");
+            const parsedQueue = storedQueue ? JSON.parse(storedQueue) : [];
+            if (parsedQueue.length > 0) {
+              const nextPlayer = parsedQueue[0];
+              const remainingQueue = parsedQueue.slice(1);
+              
+              setTimeout(() => {
+                const latestPlayers = JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || "[]");
+                const updatedPlayersList = latestPlayers.map(p => 
+                  p.id === nextPlayer.id ? { ...p, status: "in-auction" } : p
+                );
+                localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(updatedPlayersList));
+                setPlayers(updatedPlayersList);
+              }, 0);
+
+              const nextCurrent = { ...nextPlayer, status: "in-auction" };
+              saveCurrentPlayer(nextCurrent);
+              
+              setQueue(remainingQueue);
+              localStorage.setItem("ehpl-auction-queue", JSON.stringify(remainingQueue));
+            } else {
+              saveCurrentPlayer(null);
+            }
           }
         }
       } catch (e) {
@@ -305,14 +406,36 @@ export default function AdminPage() {
     const unsoldPlayer = { ...currentPlayer, status: "unsold" };
     saveCurrentPlayer(unsoldPlayer);
     
-    // Automatically clear current player after 5 seconds
+    // Automatically clear or load next player from queue after 5 seconds
     setTimeout(() => {
       try {
         const latestCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
         if (latestCurrent) {
           const parsed = JSON.parse(latestCurrent);
           if (parsed.id === unsoldPlayer.id && parsed.status === "unsold") {
-            saveCurrentPlayer(null);
+            const storedQueue = localStorage.getItem("ehpl-auction-queue");
+            const parsedQueue = storedQueue ? JSON.parse(storedQueue) : [];
+            if (parsedQueue.length > 0) {
+              const nextPlayer = parsedQueue[0];
+              const remainingQueue = parsedQueue.slice(1);
+              
+              setTimeout(() => {
+                const latestPlayers = JSON.parse(localStorage.getItem(PLAYERS_STORAGE_KEY) || "[]");
+                const updatedPlayersList = latestPlayers.map(p => 
+                  p.id === nextPlayer.id ? { ...p, status: "in-auction" } : p
+                );
+                localStorage.setItem(PLAYERS_STORAGE_KEY, JSON.stringify(updatedPlayersList));
+                setPlayers(updatedPlayersList);
+              }, 0);
+
+              const nextCurrent = { ...nextPlayer, status: "in-auction" };
+              saveCurrentPlayer(nextCurrent);
+              
+              setQueue(remainingQueue);
+              localStorage.setItem("ehpl-auction-queue", JSON.stringify(remainingQueue));
+            } else {
+              saveCurrentPlayer(null);
+            }
           }
         }
       } catch (e) {
@@ -323,11 +446,23 @@ export default function AdminPage() {
 
   const handleCancelAuction = useCallback(() => {
     if (!currentPlayer) return;
-    const updatedPlayers = players.map(p => 
-      p.id === currentPlayer.id ? { ...p, status: "available" } : p
-    );
+    
+    // Clear/reset the queue and set all queued players (plus the current player) back to available
+    const updatedPlayers = players.map(p => {
+      if (p.id === currentPlayer.id || p.status === "queued") {
+        return { ...p, status: "available" };
+      }
+      return p;
+    });
+    
     savePlayers(updatedPlayers);
     saveCurrentPlayer(null);
+    setQueue([]);
+    try {
+      localStorage.setItem("ehpl-auction-queue", JSON.stringify([]));
+    } catch (e) {
+      console.error(e);
+    }
   }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
 
   const handleResetPlayer = useCallback((playerId) => {
@@ -339,13 +474,30 @@ export default function AdminPage() {
     if (currentPlayer && currentPlayer.id === playerId) {
       saveCurrentPlayer(null);
     }
-  }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
+    
+    // Also remove from queue if present
+    const newQueue = queue.filter(p => p.id !== playerId);
+    if (newQueue.length !== queue.length) {
+      setQueue(newQueue);
+      try {
+        localStorage.setItem("ehpl-auction-queue", JSON.stringify(newQueue));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [currentPlayer, players, queue, savePlayers, saveCurrentPlayer]);
 
   const handleResetAllPlayers = useCallback(() => {
     if (window.confirm("Are you sure you want to reset ALL players status to available?")) {
       const resetPlayers = DEFAULT_PLAYERS.map(p => ({ ...p, status: "available" }));
       savePlayers(resetPlayers);
       saveCurrentPlayer(null);
+      setQueue([]);
+      try {
+        localStorage.setItem("ehpl-auction-queue", JSON.stringify([]));
+      } catch (e) {
+        console.error(e);
+      }
     }
   }, [savePlayers, saveCurrentPlayer]);
 
@@ -493,11 +645,64 @@ export default function AdminPage() {
                 No active player in auction. Choose a player below to put them in the ring.
               </div>
             )}
+
+            {/* Upcoming Queue */}
+            {queue.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-white/[0.04]">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                    Upcoming Queue ({queue.length})
+                  </h4>
+                  <button
+                    onClick={() => {
+                      if (window.confirm("Are you sure you want to clear the queue?")) {
+                        const updatedPlayers = players.map(p => 
+                          p.status === "queued" ? { ...p, status: "available" } : p
+                        );
+                        savePlayers(updatedPlayers);
+                        setQueue([]);
+                        localStorage.setItem("ehpl-auction-queue", JSON.stringify([]));
+                      }
+                    }}
+                    className="text-[9px] font-bold text-accent-red hover:underline"
+                  >
+                    Clear Queue
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {queue.map((p, idx) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.05] text-xs animate-slide-in"
+                    >
+                      <span className="text-[9px] font-bold text-muted">#{idx + 1}</span>
+                      <span
+                        className="px-1 rounded text-[9px] font-bold"
+                        style={{
+                          color: GRADES[p.grade]?.color,
+                          background: `${GRADES[p.grade]?.color}15`,
+                        }}
+                      >
+                        {p.grade}
+                      </span>
+                      <span className="font-semibold">{p.name}</span>
+                      <button
+                        onClick={() => handleRemoveFromQueue(p.id)}
+                        className="ml-1 text-muted hover:text-accent-red font-bold text-[10px]"
+                        title="Remove from queue"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Grade Tabs */}
           <div className="flex gap-2 border-b border-card-border pb-3 mb-4">
-            {["A", "B", "C"].map((gradeKey) => {
+            {["A", "B"].map((gradeKey) => {
               const active = activeGrade === gradeKey;
               const gradeInfo = GRADES[gradeKey];
               return (
@@ -527,6 +732,7 @@ export default function AdminPage() {
                 const statusColors = {
                   available: "bg-accent-green/10 text-accent-green border-accent-green/20",
                   "in-auction": "bg-gold/10 text-gold border-gold/20 animate-pulse",
+                  queued: "bg-blue-500/10 text-blue-400 border-blue-500/20",
                   sold: "bg-accent-red/10 text-accent-red border-accent-red/20",
                   unsold: "bg-orange-500/10 text-orange-400 border border-orange-500/20",
                 };
@@ -558,20 +764,36 @@ export default function AdminPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 flex-wrap">
                       {player.status === "available" && (
+                        <>
+                          <button
+                            onClick={() => handleSelectPlayer(player)}
+                            disabled={!!currentPlayer}
+                            className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-gold/10 text-gold border border-gold/25 hover:bg-gold/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer text-center"
+                          >
+                            Auction
+                          </button>
+                          <button
+                            onClick={() => handleAddToQueue(player)}
+                            className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-blue-500/10 text-blue-400 border border-blue-500/25 hover:bg-blue-500/20 transition-all cursor-pointer text-center"
+                          >
+                            + Queue
+                          </button>
+                        </>
+                      )}
+                      {player.status === "queued" && (
                         <button
-                          onClick={() => handleSelectPlayer(player)}
-                          disabled={!!currentPlayer}
-                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-gold/10 text-gold border border-gold/25 hover:bg-gold/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
+                          onClick={() => handleRemoveFromQueue(player.id)}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
                         >
-                          Put to Auction
+                          Remove Queue
                         </button>
                       )}
                       {player.status === "in-auction" && (
                         <button
                           onClick={handleCancelAuction}
-                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-accent-red/10 text-accent-red border border-accent-red/25 hover:bg-accent-red/20 transition-all cursor-pointer"
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-accent-red/10 text-accent-red border border-accent-red/25 hover:bg-accent-red/20 transition-all cursor-pointer text-center"
                         >
                           Cancel
                         </button>
@@ -579,7 +801,7 @@ export default function AdminPage() {
                       {(player.status === "sold" || player.status === "unsold") && (
                         <button
                           onClick={() => handleResetPlayer(player.id)}
-                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted-foreground border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer"
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted-foreground border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
                         >
                           Reset Status
                         </button>
