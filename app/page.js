@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   TOTAL_PURSE,
   DEFAULT_TEAMS,
@@ -9,7 +9,74 @@ import {
   formatCurrency,
   formatCompactCurrency,
 } from "./lib/teams";
-import { CURRENT_PLAYER_KEY, GRADES, getPlayerImagePath, getBasePrice } from "./lib/players";
+import { CURRENT_PLAYER_KEY, GRADES, getBasePrice } from "./lib/players";
+
+const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
+
+const INTRO_PARTICLES = Array.from({ length: 28 }, (_, index) => ({
+  left: `${8 + ((index * 37) % 84)}%`,
+  bottom: `${8 + ((index * 19) % 34)}%`,
+  size: `${3 + (index % 5)}px`,
+  duration: `${5 + (index % 6) * 0.7}s`,
+  delay: `${(index % 9) * 0.35}s`,
+}));
+
+function IntroScreen() {
+  return (
+    <div className="relative h-screen w-screen overflow-hidden bg-background text-foreground flex items-center justify-center">
+      <div className="absolute inset-0 intro-bg-glow" />
+      <div className="absolute inset-x-0 bottom-0 h-[58vh] intro-grid-floor" />
+
+      <div className="relative z-10 flex h-full w-full items-center justify-center px-4 perspective-[1400px]">
+        <div className="relative w-[min(780px,96vw)] aspect-[4/3] preserve-3d animate-intro-float">
+          <div className="absolute inset-0 rounded-[34px] border-[2.5px] border-gold/50 bg-[linear-gradient(160deg,#1a1a28_0%,#0d0d18_50%,#12121a_100%)] shadow-[0_0_110px_rgba(212,168,83,0.28),0_44px_96px_rgba(0,0,0,0.78),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl overflow-hidden flex flex-col items-center justify-center px-8 py-12 sm:px-10 sm:py-16">
+            <div className="absolute inset-0 animate-intro-shine bg-[linear-gradient(115deg,transparent_25%,rgba(255,255,255,0.04)_42%,rgba(240,212,138,0.13)_50%,rgba(255,255,255,0.04)_58%,transparent_75%)]" />
+            <div className="absolute left-0 right-0 top-0 h-1 bg-[linear-gradient(90deg,transparent,#d4a853,transparent)]" />
+            <div
+              className="absolute left-[-58px] top-[5%] bottom-[5%] w-11 rounded-xl border border-gold/20 bg-[linear-gradient(180deg,rgba(212,168,83,0.08),rgba(212,168,83,0.01))]"
+              style={{ transform: "rotateY(22deg)" }}
+            />
+            <div
+              className="absolute right-[-58px] top-[5%] bottom-[5%] w-11 rounded-xl border border-gold/20 bg-[linear-gradient(180deg,rgba(212,168,83,0.08),rgba(212,168,83,0.01))]"
+              style={{ transform: "rotateY(-22deg)" }}
+            />
+
+            <div className="absolute inset-0 pointer-events-none">
+              {INTRO_PARTICLES.map((particle, index) => (
+                <span
+                  key={index}
+                  className="absolute rounded-full bg-gold animate-intro-particle"
+                  style={{
+                    left: particle.left,
+                    bottom: particle.bottom,
+                    width: particle.size,
+                    height: particle.size,
+                    animationDuration: particle.duration,
+                    animationDelay: particle.delay,
+                  }}
+                />
+              ))}
+            </div>
+
+            <p className="relative z-10 text-[clamp(0.86rem,1.4vw,1rem)] tracking-[0.4em] uppercase text-gold/90 mb-4">
+              Welcome to
+            </p>
+            <h1 className="relative z-10 text-[clamp(2.4rem,6.4vw,4.8rem)] font-black tracking-[0.06em] uppercase leading-none text-gradient-gold glow-gold whitespace-nowrap">
+              EHPL Auction
+            </h1>
+            <div className="relative z-10 my-7 h-[3px] w-32 rounded-full bg-[linear-gradient(90deg,transparent,#d4a853,transparent)]" />
+            <p className="relative z-10 text-[clamp(1.9rem,4.7vw,3.25rem)] font-extrabold tracking-[0.32em] uppercase text-foreground text-center">
+              Season 9
+            </p>
+            <p className="relative z-10 mt-5 text-[clamp(0.86rem,1.35vw,1rem)] tracking-[0.22em] uppercase text-muted text-center">
+              Live Auction · 2026
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function TeamCard({ team, index, isUpdated }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
@@ -129,9 +196,8 @@ function PlayerCard({ player }) {
 
   return (
     <div
-      className={`flex-1 flex flex-col justify-between rounded-3xl border bg-gradient-to-br from-[#12121a] via-[#0d0d14] to-[#0a0a0f] backdrop-blur-xl p-5 sm:p-7 lg:p-9 transition-all duration-500 overflow-hidden relative ${
-        player.status === "in-auction" ? "player-panel-glow-active" : "player-panel-glow"
-      }`}
+      className={`flex-1 flex flex-col justify-between rounded-3xl border bg-gradient-to-br from-[#12121a] via-[#0d0d14] to-[#0a0a0f] backdrop-blur-xl p-5 sm:p-7 lg:p-9 transition-all duration-500 overflow-hidden relative ${player.status === "in-auction" ? "player-panel-glow-active" : "player-panel-glow"
+        }`}
       style={{
         borderColor: `${grade.color}35`,
       }}
@@ -233,18 +299,16 @@ function PlayerCard({ player }) {
       {(player.status === "sold" || player.status === "unsold") && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in">
           <div
-            className={`absolute w-[300px] h-[300px] rounded-full blur-[100px] opacity-40 animate-pulse ${
-              player.status === "sold" ? "bg-accent-green" : "bg-accent-red"
-            }`}
+            className={`absolute w-[300px] h-[300px] rounded-full blur-[100px] opacity-40 animate-pulse ${player.status === "sold" ? "bg-accent-green" : "bg-accent-red"
+              }`}
           />
 
           <div className="text-center z-10 p-6 flex flex-col items-center justify-center animate-scale-up-bounce">
             <div
-              className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 border-2 ${
-                player.status === "sold"
+              className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 border-2 ${player.status === "sold"
                   ? "bg-accent-green/10 text-accent-green border-accent-green/30"
                   : "bg-accent-red/10 text-accent-red border-accent-red/30"
-              }`}
+                }`}
             >
               {player.status === "sold" ? (
                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,9 +322,8 @@ function PlayerCard({ player }) {
             </div>
 
             <h2
-              className={`text-5xl sm:text-6xl font-black uppercase tracking-widest leading-none mb-4 ${
-                player.status === "sold" ? "text-accent-green glow-green" : "text-accent-red glow-red"
-              }`}
+              className={`text-5xl sm:text-6xl font-black uppercase tracking-widest leading-none mb-4 ${player.status === "sold" ? "text-accent-green glow-green" : "text-accent-red glow-red"
+                }`}
             >
               {player.status === "sold" ? "SOLD" : "UNSOLD"}
             </h2>
@@ -282,10 +345,10 @@ function PlayerCard({ player }) {
 }
 
 export default function DisplayPage() {
+  const [showIntro, setShowIntro] = useState(false);
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
   const [updatedIds, setUpdatedIds] = useState(new Set());
   const [currentPlayer, setCurrentPlayer] = useState(null);
-  const prevTeamsRef = useRef(null);
 
   const loadTeams = useCallback(() => {
     try {
@@ -325,10 +388,19 @@ export default function DisplayPage() {
     }
   }, []);
 
+  const loadIntroState = useCallback(() => {
+    try {
+      setShowIntro(localStorage.getItem(INTRO_VISIBLE_KEY) === "1");
+    } catch (e) {
+      console.error("Failed to load intro state:", e);
+    }
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       loadTeams();
       loadCurrentPlayer();
+      loadIntroState();
     }, 0);
 
     const handleStorage = (e) => {
@@ -338,6 +410,9 @@ export default function DisplayPage() {
       if (e.key === CURRENT_PLAYER_KEY) {
         loadCurrentPlayer();
       }
+      if (e.key === INTRO_VISIBLE_KEY) {
+        loadIntroState();
+      }
     };
 
     window.addEventListener("storage", handleStorage);
@@ -345,6 +420,7 @@ export default function DisplayPage() {
     const interval = setInterval(() => {
       loadTeams();
       loadCurrentPlayer();
+      loadIntroState();
     }, 500);
 
     return () => {
@@ -352,12 +428,16 @@ export default function DisplayPage() {
       window.removeEventListener("storage", handleStorage);
       clearInterval(interval);
     };
-  }, [loadTeams, loadCurrentPlayer]);
+  }, [loadTeams, loadCurrentPlayer, loadIntroState]);
 
   // Calculate totals
   const totalRemaining = teams.reduce((sum, t) => sum + t.purse, 0);
   const totalBudget = TOTAL_PURSE * 12;
   const totalSpent = totalBudget - totalRemaining;
+
+  if (showIntro) {
+    return <IntroScreen />;
+  }
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">

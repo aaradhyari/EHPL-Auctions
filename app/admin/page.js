@@ -17,6 +17,8 @@ import {
   GRADES,
 } from "../lib/players";
 
+const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
+
 function AdminTeamCard({ team, index, onUpdate, onReset }) {
   const color = TEAM_COLORS[index % TEAM_COLORS.length];
   const percentage = (team.purse / TOTAL_PURSE) * 100;
@@ -204,6 +206,7 @@ export default function AdminPage() {
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [activeGrade, setActiveGrade] = useState("A");
   const [queue, setQueue] = useState([]);
+  const [introVisible, setIntroVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage asynchronously to avoid synchronous setState warnings in useEffect
@@ -237,6 +240,8 @@ export default function AdminPage() {
             localStorage.removeItem(CURRENT_PLAYER_KEY);
           }
         }
+
+        setIntroVisible(localStorage.getItem(INTRO_VISIBLE_KEY) === "1");
       } catch (e) {
         console.error("Failed to load initial state:", e);
       }
@@ -501,6 +506,15 @@ export default function AdminPage() {
     }
   }, [savePlayers, saveCurrentPlayer]);
 
+  const setAudienceIntro = useCallback((visible) => {
+    setIntroVisible(visible);
+    try {
+      localStorage.setItem(INTRO_VISIBLE_KEY, visible ? "1" : "0");
+    } catch (e) {
+      console.error("Failed to update intro state:", e);
+    }
+  }, []);
+
   // Summary stats
   const totalRemaining = teams.reduce((sum, t) => sum + t.purse, 0);
   const totalBudget = TOTAL_PURSE * 12;
@@ -535,12 +549,38 @@ export default function AdminPage() {
                   ADMIN PANEL
                 </h1>
                 <p className="text-[10px] sm:text-xs text-muted">
-                  Manage team purses • Changes sync in real-time
+                  Manage team purses • Audience intro: {introVisible ? "showing" : "hidden"}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                <span className="text-[10px] sm:text-xs font-bold text-muted uppercase tracking-wider">
+                  Audience Intro
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={introVisible}
+                  onClick={() => setAudienceIntro(!introVisible)}
+                  className={`relative h-5 w-10 rounded-full border transition-all duration-200 cursor-pointer ${
+                    introVisible
+                      ? "bg-gold/25 border-gold/50"
+                      : "bg-white/[0.04] border-white/[0.12]"
+                  }`}
+                  title={introVisible ? "Hide Intro On Audience Display" : "Show Intro On Audience Display"}
+                >
+                  <span
+                    className={`absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full transition-all duration-200 ${
+                      introVisible
+                        ? "left-[21px] bg-gold shadow-[0_0_12px_rgba(212,168,83,0.45)]"
+                        : "left-1 bg-muted"
+                    }`}
+                  />
+                </button>
+              </div>
+
               {/* Summary Stats */}
               <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
                 <div className="text-right">

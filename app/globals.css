@@ -216,3 +216,77 @@ input[type="number"] {
   text-shadow: 0 0 15px rgba(239, 68, 68, 0.5), 0 0 30px rgba(239, 68, 68, 0.2);
 }
 
+/* React intro screen */
+.intro-bg-glow {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(212, 168, 83, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 20% 80%, rgba(34, 197, 94, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 70% at 80% 20%, rgba(239, 68, 68, 0.06) 0%, transparent 50%);
+  animation: introGlowPulse 6s ease-in-out infinite;
+}
+
+.intro-grid-floor {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 70px 70px;
+  transform: perspective(700px) rotateX(55deg);
+  transform-origin: bottom center;
+  opacity: 0.6;
+  animation: introGridScroll 25s linear infinite;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@keyframes introGlowPulse {
+  0%, 100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes introGridScroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 70px; }
+}
+
+@keyframes introFloat {
+  0%, 100% { transform: translateY(0) rotateX(5deg) rotateY(-8deg); }
+  50% { transform: translateY(-28px) rotateX(10deg) rotateY(-4deg); }
+}
+
+@keyframes introShine {
+  0%, 100% { transform: translateX(-140%); }
+  50% { transform: translateX(140%); }
+}
+
+@keyframes introParticleRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  10% { opacity: 1; }
+  90% { opacity: 0.25; }
+  100% {
+    opacity: 0;
+    transform: translateY(-380px) translateX(60px) scale(0);
+  }
+}
+
+.animate-intro-float {
+  animation: introFloat 7s ease-in-out infinite;
+}
+
+.animate-intro-shine {
+  animation: introShine 5s ease-in-out infinite;
+}
+
+.animate-intro-particle {
+  animation: introParticleRise linear infinite;
+}
