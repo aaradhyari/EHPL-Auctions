@@ -9,7 +9,7 @@ import {
   formatCurrency,
   formatCompactCurrency,
 } from "./lib/teams";
-import { CURRENT_PLAYER_KEY, GRADES, getBasePrice } from "./lib/players";
+import { CURRENT_PLAYER_KEY, getBasePrice } from "./lib/players";
 
 const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
 
@@ -157,7 +157,13 @@ function TeamCard({ team, index, isUpdated }) {
 }
 
 function PlayerCard({ player }) {
-  const grade = GRADES[player?.grade] || GRADES.A;
+  const theme = {
+    color: "#d4a853",
+    colorLight: "#f0d48a",
+    colorDark: "#a8842f",
+    bgGradient: "linear-gradient(135deg, #d4a85320, #a8842f10)",
+    border: "#d4a85340",
+  };
 
   if (!player) {
     return (
@@ -199,49 +205,37 @@ function PlayerCard({ player }) {
       className={`flex-1 flex flex-col justify-between rounded-3xl border bg-gradient-to-br from-[#12121a] via-[#0d0d14] to-[#0a0a0f] backdrop-blur-xl p-5 sm:p-7 lg:p-9 transition-all duration-500 overflow-hidden relative ${player.status === "in-auction" ? "player-panel-glow-active" : "player-panel-glow"
         }`}
       style={{
-        borderColor: `${grade.color}35`,
+        borderColor: `${theme.color}35`,
       }}
     >
       {/* Ambient glow */}
       <div
         className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px] opacity-20 pointer-events-none"
-        style={{ background: grade.color }}
+        style={{ background: theme.color }}
       />
       <div
         className="absolute -bottom-20 -left-20 w-48 h-48 rounded-full blur-[60px] opacity-10 pointer-events-none"
-        style={{ background: grade.color }}
+        style={{ background: theme.color }}
       />
 
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${grade.color}, transparent)` }}
+        style={{ background: `linear-gradient(90deg, transparent, ${theme.color}, transparent)` }}
       />
-
-      {/* Grade Badge - Corner (top-right) */}
-      <div className="absolute top-5 right-5 sm:top-7 sm:right-7 z-20">
-        <div
-          className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 flex flex-col items-center justify-center shadow-lg backdrop-blur-md"
-          style={{
-            borderColor: grade.border,
-            background: `${grade.color}20`,
-            boxShadow: `0 0 25px ${grade.color}30`,
-          }}
-        >
-          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest" style={{ color: grade.color }}>
-            Grade
-          </span>
-          <span className="text-xl sm:text-2xl font-black leading-none" style={{ color: grade.color }}>
-            {player.grade}
-          </span>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex flex-col justify-center">
         {/* Player Name - Hero */}
         <div className="mb-6 sm:mb-8">
-          <p className="text-[10px] sm:text-xs text-muted uppercase tracking-[0.2em] mb-1.5">Player Name</p>
+          <div className="flex items-center gap-3.5 mb-1.5">
+            <p className="text-[10px] sm:text-xs text-muted uppercase tracking-[0.2em] mb-0">Player Name</p>
+            {player.unsoldOnce && (
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded border border-accent-red/40 bg-accent-red/10 text-accent-red uppercase tracking-wider animate-pulse">
+                Unsold Once
+              </span>
+            )}
+          </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight uppercase leading-none break-words">
             {player.name}
           </h2>
@@ -250,7 +244,7 @@ function PlayerCard({ player }) {
         {/* Divider */}
         <div
           className="w-full h-[1px] mb-6 sm:mb-8 opacity-30"
-          style={{ background: `linear-gradient(90deg, ${grade.color}60, transparent)` }}
+          style={{ background: `linear-gradient(90deg, ${theme.color}60, transparent)` }}
         />
 
         {/* Info Grid: Activity + Base Price */}
@@ -259,7 +253,7 @@ function PlayerCard({ player }) {
           <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
             <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Activity</p>
-            <p className="text-xl sm:text-2xl font-black tracking-wide uppercase" style={{ color: grade.color }}>
+            <p className="text-xl sm:text-2xl font-black tracking-wide uppercase" style={{ color: theme.color }}>
               {activity}
             </p>
           </div>
@@ -269,18 +263,25 @@ function PlayerCard({ player }) {
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
             <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Base Price</p>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-lg sm:text-xl font-black tracking-tight" style={{ color: grade.color }}>
+              <span className="text-lg sm:text-xl font-black tracking-tight" style={{ color: theme.color }}>
                 ₹
               </span>
-              <span className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: grade.color }}>
+              <span className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.color }}>
                 {basePrice.toLocaleString("en-IN")}
               </span>
             </div>
-            <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-wider mt-1">
-              {grade.label} Tier
-            </p>
           </div>
         </div>
+
+        {player.prevTeam && (
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm mt-3 sm:mt-4 animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Previous Team</p>
+            <p className="text-xl sm:text-2xl font-black tracking-wide uppercase text-gold">
+              {player.prevTeam}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Live Bidding Indicator - Bottom Left Corner */}
@@ -334,19 +335,16 @@ function PlayerCard({ player }) {
             <h3 className="text-xl sm:text-2xl font-bold text-foreground truncate max-w-[320px]">
               {player.name}
             </h3>
-            <p className="text-xs font-bold text-gold uppercase mt-3 px-3 py-1 rounded-full bg-gold/10 border border-gold/25">
-              Grade {player.grade}
-            </p>
             {player.status === "sold" && player.soldTo && (
-              <div className="mt-8 px-10 sm:px-14 py-7 rounded-3xl bg-accent-green/10 border-2 border-accent-green/30 shadow-[0_0_50px_rgba(34,197,94,0.18)]">
-                <p className="text-base sm:text-xl text-muted uppercase tracking-widest mb-3">
+              <div className="mt-6 px-8 sm:px-10 py-5 rounded-2xl bg-accent-green/10 border-2 border-accent-green/30 shadow-[0_0_40px_rgba(34,197,94,0.15)]">
+                <p className="text-xs sm:text-sm text-muted uppercase tracking-widest mb-2">
                   Sold To
                 </p>
-                <p className="text-5xl sm:text-6xl lg:text-7xl font-black text-accent-green uppercase leading-none glow-green">
+                <p className="text-4xl sm:text-5xl lg:text-6xl font-black text-accent-green uppercase leading-none glow-green">
                   {player.soldTo}
                 </p>
                 {player.price && (
-                  <p className="text-3xl sm:text-4xl font-bold text-foreground mt-4">
+                  <p className="text-2xl sm:text-3xl font-bold text-foreground mt-3">
                     {formatCurrency(player.price)}
                   </p>
                 )}

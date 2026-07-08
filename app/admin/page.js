@@ -14,7 +14,6 @@ import {
   PLAYERS_STORAGE_KEY,
   CURRENT_PLAYER_KEY,
   DEFAULT_PLAYERS,
-  GRADES,
 } from "../lib/players";
 
 const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
@@ -204,8 +203,8 @@ export default function AdminPage() {
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
   const [players, setPlayers] = useState(DEFAULT_PLAYERS);
   const [currentPlayer, setCurrentPlayer] = useState(null);
-  const [activeGrade, setActiveGrade] = useState("A");
   const [queue, setQueue] = useState([]);
+  const [activeTab, setActiveTab] = useState("available");
   const [introVisible, setIntroVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSoldModalOpen, setIsSoldModalOpen] = useState(false);
@@ -223,25 +222,20 @@ export default function AdminPage() {
         
         const storedPlayers = localStorage.getItem(PLAYERS_STORAGE_KEY);
         if (storedPlayers) {
-          const parsedPlayers = JSON.parse(storedPlayers).filter(p => GRADES[p.grade]);
+          const parsedPlayers = JSON.parse(storedPlayers);
           setPlayers(parsedPlayers);
         }
         
         const storedQueue = localStorage.getItem("ehpl-auction-queue");
         if (storedQueue) {
-          const parsedQueue = JSON.parse(storedQueue).filter(p => GRADES[p.grade]);
+          const parsedQueue = JSON.parse(storedQueue);
           setQueue(parsedQueue);
         }
 
         const storedCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
         if (storedCurrent) {
           const parsedCurrent = JSON.parse(storedCurrent);
-          if (GRADES[parsedCurrent.grade]) {
-            setCurrentPlayer(parsedCurrent);
-          } else {
-            setCurrentPlayer(null);
-            localStorage.removeItem(CURRENT_PLAYER_KEY);
-          }
+          setCurrentPlayer(parsedCurrent);
         }
 
         setIntroVisible(localStorage.getItem(INTRO_VISIBLE_KEY) === "1");
@@ -318,10 +312,10 @@ export default function AdminPage() {
     }
 
     const updatedPlayers = players.map(p => 
-      p.id === player.id ? { ...p, status: "in-auction" } : p
+      p.id === player.id ? { ...p, status: "in-auction", unsoldOnce: player.status === "unsold" ? true : p.unsoldOnce } : p
     );
     savePlayers(updatedPlayers);
-    saveCurrentPlayer({ ...player, status: "in-auction" });
+    saveCurrentPlayer({ ...player, status: "in-auction", unsoldOnce: player.status === "unsold" ? true : player.unsoldOnce });
   }, [players, savePlayers, saveCurrentPlayer]);
 
   const handleAddToQueue = useCallback((player) => {
@@ -664,30 +658,25 @@ export default function AdminPage() {
             {currentPlayer ? (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div 
-                    className="w-12 h-12 rounded-lg border border-gold/25 flex items-center justify-center font-black text-xl animate-slide-in"
-                    style={{
-                      background: GRADES[currentPlayer.grade]?.bgGradient || 'none',
-                      color: GRADES[currentPlayer.grade]?.color || '#ffffff',
-                      borderColor: GRADES[currentPlayer.grade]?.border || 'transparent',
-                    }}
-                  >
-                    {currentPlayer.grade}
-                  </div>
                   <div>
-                    <h4 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                      {currentPlayer.name}
-                    </h4>
-                    <span 
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider mt-1 inline-block"
-                      style={{
-                        color: GRADES[currentPlayer.grade]?.color,
-                        borderColor: GRADES[currentPlayer.grade]?.border,
-                        background: `${GRADES[currentPlayer.grade]?.color}10`,
-                      }}
-                    >
-                      {GRADES[currentPlayer.grade]?.label}
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+                        {currentPlayer.name}
+                      </h4>
+                      {currentPlayer.unsoldOnce && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-accent-red/30 bg-accent-red/10 text-accent-red uppercase">
+                          Unsold Once
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold/25 text-gold bg-gold/10 uppercase tracking-wider mt-1 inline-block">
+                      {currentPlayer.activity || "No Activity"}
                     </span>
+                    {currentPlayer.prevTeam && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/20 text-muted bg-white/5 uppercase tracking-wider mt-1 ml-2 inline-block">
+                        Prev: {currentPlayer.prevTeam}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -748,15 +737,6 @@ export default function AdminPage() {
                       className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.05] text-xs animate-slide-in"
                     >
                       <span className="text-[9px] font-bold text-muted">#{idx + 1}</span>
-                      <span
-                        className="px-1 rounded text-[9px] font-bold"
-                        style={{
-                          color: GRADES[p.grade]?.color,
-                          background: `${GRADES[p.grade]?.color}15`,
-                        }}
-                      >
-                        {p.grade}
-                      </span>
                       <span className="font-semibold">{p.name}</span>
                       <button
                         onClick={() => handleRemoveFromQueue(p.id)}
@@ -772,34 +752,49 @@ export default function AdminPage() {
             )}
           </div>
 
-          {/* Grade Tabs */}
-          <div className="flex gap-2 border-b border-card-border pb-3 mb-4">
-            {["A", "B"].map((gradeKey) => {
-              const active = activeGrade === gradeKey;
-              const gradeInfo = GRADES[gradeKey];
+          {/* Player Tabs */}
+          <div className="flex flex-wrap gap-2 border-b border-card-border pb-3 mb-4">
+            {[
+              { id: "available", label: "Available" },
+              { id: "female", label: "Female" },
+              { id: "unsold", label: "Unsold" },
+              { id: "sold", label: "Sold" }
+            ].map((tab) => {
+              const active = activeTab === tab.id;
               return (
                 <button
-                  key={gradeKey}
-                  onClick={() => setActiveGrade(gradeKey)}
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer border ${
                     active 
-                      ? "text-black border-transparent" 
+                      ? "text-black border-transparent bg-gold" 
                       : "text-muted hover:text-foreground border-white/[0.04] bg-white/[0.01]"
                   }`}
-                  style={{
-                    backgroundColor: active ? gradeInfo.color : "transparent",
-                  }}
                 >
-                  {gradeInfo.label}
+                  {tab.label}
                 </button>
               );
             })}
           </div>
 
-          {/* Player Grid by Grade */}
+          {/* Player Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
             {players
-              .filter((p) => p.grade === activeGrade)
+              .filter((p) => {
+                if (activeTab === "available") {
+                  return (p.status === "available" || p.status === "queued" || p.status === "in-auction") && p.gender !== "female";
+                }
+                if (activeTab === "female") {
+                  return (p.status === "available" || p.status === "queued" || p.status === "in-auction") && p.gender === "female";
+                }
+                if (activeTab === "unsold") {
+                  return p.status === "unsold";
+                }
+                if (activeTab === "sold") {
+                  return p.status === "sold";
+                }
+                return true;
+              })
               .map((player) => {
                 const statusColors = {
                   available: "bg-accent-green/10 text-accent-green border-accent-green/20",
@@ -815,20 +810,20 @@ export default function AdminPage() {
                     className="flex flex-col justify-between border border-white/[0.04] bg-white/[0.01] rounded-lg p-3 hover:border-white/10 transition-colors"
                   >
                     <div className="flex items-center gap-2.5 mb-3">
-                      <div 
-                        className="w-9 h-9 rounded-md border flex items-center justify-center text-sm font-black shrink-0"
-                        style={{
-                          borderColor: GRADES[player.grade].border,
-                          color: GRADES[player.grade].color,
-                          background: `${GRADES[player.grade].color}10`,
-                        }}
-                      >
-                        {player.grade}
+                      <div className="w-9 h-9 rounded-md border border-gold/20 flex items-center justify-center text-xs font-bold shrink-0 text-gold bg-gold/5">
+                        {player.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
-                          {player.name}
-                        </h4>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground truncate max-w-[120px]">
+                            {player.name}
+                          </h4>
+                          {player.unsoldOnce && (
+                            <span className="text-[8px] font-bold px-1 rounded border border-accent-red/20 bg-accent-red/5 text-accent-red uppercase whitespace-nowrap">
+                              Unsold Once
+                            </span>
+                          )}
+                        </div>
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase mt-1 inline-block ${statusColors[player.status]}`}>
                           {player.status === "in-auction" ? "Live" : player.status}
                         </span>
@@ -876,13 +871,30 @@ export default function AdminPage() {
                           Cancel
                         </button>
                       )}
-                      {(player.status === "sold" || player.status === "unsold") && (
+                      {player.status === "sold" && (
                         <button
                           onClick={() => handleResetPlayer(player.id)}
                           className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted-foreground border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
                         >
                           Reset Status
                         </button>
+                      )}
+                      {player.status === "unsold" && (
+                        <>
+                          <button
+                            onClick={() => handleSelectPlayer(player)}
+                            disabled={!!currentPlayer}
+                            className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-gold/10 text-gold border border-gold/25 hover:bg-gold/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer text-center"
+                          >
+                            Re-auction
+                          </button>
+                          <button
+                            onClick={() => handleResetPlayer(player.id)}
+                            className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
+                          >
+                            Reset
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
