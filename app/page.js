@@ -337,6 +337,21 @@ function PlayerCard({ player }) {
             <p className="text-xs font-bold text-gold uppercase mt-3 px-3 py-1 rounded-full bg-gold/10 border border-gold/25">
               Grade {player.grade}
             </p>
+            {player.status === "sold" && player.soldTo && (
+              <div className="mt-8 px-10 sm:px-14 py-7 rounded-3xl bg-accent-green/10 border-2 border-accent-green/30 shadow-[0_0_50px_rgba(34,197,94,0.18)]">
+                <p className="text-base sm:text-xl text-muted uppercase tracking-widest mb-3">
+                  Sold To
+                </p>
+                <p className="text-5xl sm:text-6xl lg:text-7xl font-black text-accent-green uppercase leading-none glow-green">
+                  {player.soldTo}
+                </p>
+                {player.price && (
+                  <p className="text-3xl sm:text-4xl font-bold text-foreground mt-4">
+                    {formatCurrency(player.price)}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

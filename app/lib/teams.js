@@ -1,4 +1,4 @@
-export const TOTAL_PURSE = 1500000;
+export const TOTAL_PURSE = 2000000;
 
 export const DEFAULT_TEAMS = [
   { id: 1, name: "AGNIASTRA", purse: TOTAL_PURSE },

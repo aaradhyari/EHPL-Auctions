@@ -208,6 +208,9 @@ export default function AdminPage() {
   const [queue, setQueue] = useState([]);
   const [introVisible, setIntroVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSoldModalOpen, setIsSoldModalOpen] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [soldPrice, setSoldPrice] = useState("");
 
   // Load from localStorage asynchronously to avoid synchronous setState warnings in useEffect
   useEffect(() => {
@@ -353,16 +356,45 @@ export default function AdminPage() {
 
   const handleMarkSold = useCallback(() => {
     if (!currentPlayer) return;
+    setIsSoldModalOpen(true);
+  }, [currentPlayer]);
+
+  const confirmSold = () => {
+    if (!currentPlayer || !selectedTeamId || !soldPrice) {
+      alert("Please select a team and enter a price.");
+      return;
+    }
+
+    const price = Number(soldPrice);
+    if (!Number.isFinite(price) || price <= 0) {
+      alert("Please enter a valid positive price.");
+      return;
+    }
+
+    const team = teams.find(t => t.id === Number(selectedTeamId));
+    if (!team) {
+      alert("Team not found.");
+      return;
+    }
+
+    // Update team purse
+    const updatedTeams = teams.map(t => 
+      t.id === team.id ? { ...t, purse: t.purse - price } : t
+    );
+    saveTeams(updatedTeams);
+
     const updatedPlayers = players.map(p => 
-      p.id === currentPlayer.id ? { ...p, status: "sold" } : p
+      p.id === currentPlayer.id ? { ...p, status: "sold", soldTo: team.name, price: price } : p
     );
     savePlayers(updatedPlayers);
     
-    // Temporarily save as sold to let presentation side show it
-    const soldPlayer = { ...currentPlayer, status: "sold" };
+    const soldPlayer = { ...currentPlayer, status: "sold", soldTo: team.name, price: price };
     saveCurrentPlayer(soldPlayer);
     
-    // Automatically clear or load next player from queue after 5 seconds
+    setIsSoldModalOpen(false);
+    setSelectedTeamId("");
+    setSoldPrice("");
+
     setTimeout(() => {
       try {
         const latestCurrent = localStorage.getItem(CURRENT_PLAYER_KEY);
@@ -398,7 +430,7 @@ export default function AdminPage() {
         console.error(e);
       }
     }, 5000);
-  }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
+  };
 
   const handleMarkUnsold = useCallback(() => {
     if (!currentPlayer) return;
@@ -800,6 +832,12 @@ export default function AdminPage() {
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase mt-1 inline-block ${statusColors[player.status]}`}>
                           {player.status === "in-auction" ? "Live" : player.status}
                         </span>
+                        {player.status === "sold" && player.soldTo && (
+                          <p className="mt-1 text-[10px] text-gold leading-tight">
+                            Sold to {player.soldTo}
+                            {player.price ? ` for ${formatCompactCurrency(player.price)}` : ""}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -883,6 +921,82 @@ export default function AdminPage() {
           </Link>
         </div>
       </footer>
+
+      {/* Sold Modal */}
+      {isSoldModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 sm:p-8 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-card-bg border-2 border-card-border rounded-3xl p-8 sm:p-12 max-w-5xl w-full shadow-2xl animate-scale-up-bounce">
+            <div className="mb-10">
+              <p className="text-sm sm:text-base text-muted uppercase tracking-widest mb-3">Confirm Sale</p>
+              <h3 className="text-4xl sm:text-6xl font-black text-gradient-gold leading-tight">
+                {currentPlayer?.name}
+              </h3>
+            </div>
+
+            <div className="space-y-8">
+              <div>
+                <label className="block text-base sm:text-lg font-bold text-muted uppercase tracking-wider mb-3">
+                  Winning Team
+                </label>
+                <select
+                  value={selectedTeamId}
+                  onChange={(e) => setSelectedTeamId(e.target.value)}
+                  className="w-full px-6 py-5 rounded-2xl bg-white/[0.05] border-2 border-white/[0.1] text-2xl sm:text-3xl font-bold text-foreground focus:outline-none focus:border-gold/50 transition-all"
+                >
+                  <option value="">Select a team...</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name} - {formatCompactCurrency(team.purse)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-base sm:text-lg font-bold text-muted uppercase tracking-wider mb-3">
+                  Winning Price
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={soldPrice}
+                  onChange={(e) => setSoldPrice(e.target.value)}
+                  placeholder="Enter price"
+                  className="w-full px-6 py-5 rounded-2xl bg-white/[0.05] border-2 border-white/[0.1] text-2xl sm:text-3xl font-bold text-foreground placeholder:text-muted/50 focus:outline-none focus:border-gold/50 transition-all"
+                />
+              </div>
+
+              {selectedTeamId && soldPrice && Number(soldPrice) > 0 && (
+                <div className="rounded-2xl border border-gold/20 bg-gold/10 px-6 py-5 text-lg sm:text-2xl text-gold">
+                  {teams.find((team) => team.id === Number(selectedTeamId))?.name} purse will reduce by{" "}
+                  <span className="font-bold">{formatCurrency(Number(soldPrice))}</span>.
+                </div>
+              )}
+
+              <div className="flex gap-5 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSoldModalOpen(false);
+                    setSelectedTeamId("");
+                    setSoldPrice("");
+                  }}
+                  className="flex-1 py-5 text-2xl font-bold rounded-2xl bg-white/5 text-muted border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmSold}
+                  className="flex-1 py-5 text-2xl font-black rounded-2xl bg-accent-green text-black hover:bg-accent-green/90 active:scale-95 transition-all cursor-pointer"
+                >
+                  Confirm Sale
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
