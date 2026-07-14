@@ -123,6 +123,7 @@ export const DEFAULT_PLAYERS = [
   { id: "c11-120", name: "DHANRAI AGRAWAL", activity: "SWIMMING", gender: "male", status: "available" },
   { id: "c11-121", name: "ABDEALI MURAD", activity: "BADMINTON", gender: "male", status: "available" },
   { id: "c11-122", name: "NAVOL SINGH", activity: "HANDBALL", gender: "male", status: "available" },
+  { id: "c11-123", name: "YASH KUMAR AGRAWAL", activity: "SQUASH", gender: "male", status: "available" },
 
   // Class 12 Players
   { id: "c12-01", name: "AARADHYA RAI", activity: "WALL CLIMBING", gender: "male", prevTeam: "DHRUVA", status: "available" },

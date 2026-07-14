@@ -777,8 +777,8 @@ export default function AdminPage() {
             })}
           </div>
 
-          {/* Player Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
+        {/* Player Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
             {players
               .filter((p) => {
                 if (activeTab === "available") {
@@ -813,20 +813,21 @@ export default function AdminPage() {
                       <div className="w-9 h-9 rounded-md border border-gold/20 flex items-center justify-center text-xs font-bold shrink-0 text-gold bg-gold/5">
                         {player.name.split(" ").map(n => n[0]).join("").substring(0, 2)}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-xs sm:text-sm font-bold text-foreground truncate max-w-[120px]">
-                            {player.name}
-                          </h4>
-                          {player.unsoldOnce && (
-                            <span className="text-[8px] font-bold px-1 rounded border border-accent-red/20 bg-accent-red/5 text-accent-red uppercase whitespace-nowrap">
-                              Unsold Once
-                            </span>
-                          )}
-                        </div>
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase mt-1 inline-block ${statusColors[player.status]}`}>
-                          {player.status === "in-auction" ? "Live" : player.status}
-                        </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted font-mono">({player.id.toUpperCase()})</span>
+                <h4 className="text-sm font-bold text-foreground truncate mt-1">
+                  {player.name}
+                </h4>
+                {player.unsoldOnce && (
+                  <span className="text-[8px] font-bold px-1 rounded border border-accent-red/20 bg-accent-red/5 text-accent-red uppercase whitespace-nowrap mt-1 self-start">
+                    Unsold Once
+                  </span>
+                )}
+              </div>
+              <span className={`text-[9px] font-bold px-2 py-1 rounded border uppercase mt-2 inline-block ${statusColors[player.status]}`}>
+                {player.status === "in-auction" ? "Live" : player.status === "available" ? "Available" : player.status}
+              </span>
                         {player.status === "sold" && player.soldTo && (
                           <p className="mt-1 text-[10px] text-gold leading-tight">
                             Sold to {player.soldTo}
