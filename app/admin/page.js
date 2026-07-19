@@ -423,7 +423,7 @@ export default function AdminPage() {
       } catch (e) {
         console.error(e);
       }
-    }, 5000);
+    }, 10000);
   };
 
   const handleMarkUnsold = useCallback(() => {
@@ -472,7 +472,7 @@ export default function AdminPage() {
       } catch (e) {
         console.error(e);
       }
-    }, 5000);
+    }, 10000);
   }, [currentPlayer, players, savePlayers, saveCurrentPlayer]);
 
   const handleCancelAuction = useCallback(() => {
