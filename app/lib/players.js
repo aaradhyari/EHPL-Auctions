@@ -213,7 +213,7 @@ export const DEFAULT_PLAYERS = [
   { id: "f-10", name: "SURYA TIWARI", activity: "SWIMMING", gender: "female", status: "available" },
   { id: "f-11", name: "DEETYA SINGHANIA", activity: "VOLLEYBALL", gender: "female", status: "available" },
   { id: "f-12", name: "KANAK JAIN", activity: "FOOTBALL", gender: "female", status: "available" },
-  { id: "f-13", name: "PARIDHI AGRAWAL", activity: "KARATE", gender: "female", status: "available" },
+  { id: "f-13", name: "SIDDHI PATEL", activity: "KARATE", gender: "female", status: "available" },
   { id: "f-14", name: "UNNATI JHAWAR", activity: "SKATING", gender: "female", status: "available" },
   { id: "f-15", name: "JIYA LILANI", activity: "SHOOTING", gender: "female", status: "available" },
   { id: "f-16", name: "KATYAYANI SAKTAWAT", activity: "SQUASH", gender: "female", status: "available" },
