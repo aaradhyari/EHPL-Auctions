@@ -187,7 +187,7 @@ function PlayerCard({ player }) {
     );
   }
 
-  const basePrice = getBasePrice(player);
+  const basePrice = player.pairPartner ? 20000 : getBasePrice(player);
   const activityColors = {
     cricket: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
     football: "bg-blue-500/10 text-blue-400 border-blue-500/30",
@@ -236,9 +236,25 @@ function PlayerCard({ player }) {
               </span>
             )}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight uppercase leading-none break-words">
-            {player.name}
-          </h2>
+          {player.pairPartner ? (
+            <div className="flex flex-col">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight uppercase leading-none break-words">
+                {player.name}
+              </h2>
+              <div className="flex items-center gap-3 my-3">
+                <div className="flex-1 h-[1px] bg-white/10" />
+                <span className="text-sm sm:text-base font-black text-gold tracking-widest">—</span>
+                <div className="flex-1 h-[1px] bg-white/10" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight uppercase leading-none break-words">
+                {player.pairPartner.name}
+              </h2>
+            </div>
+          ) : (
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight uppercase leading-none break-words">
+              {player.name}
+            </h2>
+          )}
         </div>
 
         {/* Divider */}
@@ -248,15 +264,17 @@ function PlayerCard({ player }) {
         />
 
         {/* Info Grid: Activity + Base Price */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className={`grid gap-3 sm:gap-4 ${player.pairPartner ? "grid-cols-1" : "grid-cols-2"}`}>
           {/* Activity Card */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
-            <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Activity</p>
-            <p className="text-xl sm:text-2xl font-black tracking-wide uppercase" style={{ color: theme.color }}>
-              {activity}
-            </p>
-          </div>
+          {!player.pairPartner && (
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+              <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-[0.2em] mb-2">Activity</p>
+              <p className="text-xl sm:text-2xl font-black tracking-wide uppercase" style={{ color: theme.color }}>
+                {activity}
+              </p>
+            </div>
+          )}
 
           {/* Base Price Card */}
           <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-sm">
@@ -335,6 +353,14 @@ function PlayerCard({ player }) {
             <h3 className="text-xl sm:text-2xl font-bold text-foreground truncate max-w-[320px]">
               {player.name}
             </h3>
+            {player.pairPartner && (
+              <>
+                <span className="text-lg font-black text-gold my-1">—</span>
+                <h3 className="text-xl sm:text-2xl font-bold text-foreground truncate max-w-[320px]">
+                  {player.pairPartner.name}
+                </h3>
+              </>
+            )}
             {player.status === "sold" && player.soldTo && (
               <div className="mt-6 px-8 sm:px-10 py-5 rounded-2xl bg-accent-green/10 border-2 border-accent-green/30 shadow-[0_0_40px_rgba(34,197,94,0.15)]">
                 <p className="text-xs sm:text-sm text-muted uppercase tracking-widest mb-2">

@@ -14,6 +14,8 @@ import {
   PLAYERS_STORAGE_KEY,
   CURRENT_PLAYER_KEY,
   DEFAULT_PLAYERS,
+  FEMALE_PAIRS,
+  getPairPartner,
 } from "../lib/players";
 
 const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
@@ -311,11 +313,21 @@ export default function AdminPage() {
       return;
     }
 
+    let auctionPlayer = { ...player, status: "in-auction", unsoldOnce: player.status === "unsold" ? true : player.unsoldOnce };
+
+    if (player.gender === "female") {
+      const partnerId = getPairPartner(player.id);
+      const partner = players.find(p => p.id === partnerId);
+      if (partner) {
+        auctionPlayer.pairPartner = { name: partner.name, activity: partner.activity };
+      }
+    }
+
     const updatedPlayers = players.map(p => 
       p.id === player.id ? { ...p, status: "in-auction", unsoldOnce: player.status === "unsold" ? true : p.unsoldOnce } : p
     );
     savePlayers(updatedPlayers);
-    saveCurrentPlayer({ ...player, status: "in-auction", unsoldOnce: player.status === "unsold" ? true : player.unsoldOnce });
+    saveCurrentPlayer(auctionPlayer);
   }, [players, savePlayers, saveCurrentPlayer]);
 
   const handleAddToQueue = useCallback((player) => {
@@ -663,15 +675,25 @@ export default function AdminPage() {
                       <h4 className="text-base sm:text-lg font-bold text-foreground leading-tight">
                         {currentPlayer.name}
                       </h4>
+                      {currentPlayer.pairPartner && (
+                        <>
+                          <span className="text-base sm:text-lg font-black text-gold">—</span>
+                          <h4 className="text-base sm:text-lg font-bold text-foreground leading-tight">
+                            {currentPlayer.pairPartner.name}
+                          </h4>
+                        </>
+                      )}
                       {currentPlayer.unsoldOnce && (
                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-accent-red/30 bg-accent-red/10 text-accent-red uppercase">
                           Unsold Once
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold/25 text-gold bg-gold/10 uppercase tracking-wider mt-1 inline-block">
-                      {currentPlayer.activity || "No Activity"}
-                    </span>
+                    {!currentPlayer.pairPartner && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-gold/25 text-gold bg-gold/10 uppercase tracking-wider mt-1 inline-block">
+                        {currentPlayer.activity || "No Activity"}
+                      </span>
+                    )}
                     {currentPlayer.prevTeam && (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/20 text-muted bg-white/5 uppercase tracking-wider mt-1 ml-2 inline-block">
                         Prev: {currentPlayer.prevTeam}
@@ -779,7 +801,112 @@ export default function AdminPage() {
 
         {/* Player Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-            {players
+          {activeTab === "female" ? (
+            FEMALE_PAIRS.map(([firstId, secondId], pairIndex) => {
+              const first = players.find(p => p.id === firstId);
+              const second = players.find(p => p.id === secondId);
+              if (!first || !second) return null;
+              const pairStatus = first.status;
+              const statusColors = {
+                available: "bg-accent-green/10 text-accent-green border-accent-green/20",
+                "in-auction": "bg-gold/10 text-gold border-gold/20 animate-pulse",
+                queued: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                sold: "bg-accent-red/10 text-accent-red border-accent-red/20",
+                unsold: "bg-orange-500/10 text-orange-400 border border-orange-500/20",
+              };
+              return (
+                <div
+                  key={pairIndex}
+                  className="flex flex-col justify-between border border-white/[0.04] bg-white/[0.01] rounded-lg p-3 hover:border-white/10 transition-colors"
+                >
+                  <div className="mb-3">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-bold text-muted font-mono">({first.id.toUpperCase()})</span>
+                        <h4 className="text-sm font-bold text-foreground truncate">{first.name}</h4>
+                      </div>
+                      <span className="text-xs font-black text-gold text-center">—</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-bold text-muted font-mono">({second.id.toUpperCase()})</span>
+                        <h4 className="text-sm font-bold text-foreground truncate">{second.name}</h4>
+                      </div>
+                    </div>
+                    <span className={`text-[9px] font-bold px-2 py-1 rounded border uppercase mt-2 inline-block ${statusColors[pairStatus]}`}>
+                      {pairStatus === "in-auction" ? "Live" : pairStatus === "available" ? "Available" : pairStatus}
+                    </span>
+                    {pairStatus === "sold" && first.soldTo && (
+                      <p className="mt-1 text-[10px] text-gold leading-tight">
+                        Sold to {first.soldTo}
+                        {first.price ? ` for ${formatCompactCurrency(first.price)}` : ""}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-1.5 flex-wrap">
+                    {pairStatus === "available" && (
+                      <>
+                        <button
+                          onClick={() => handleSelectPlayer(first)}
+                          disabled={!!currentPlayer}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-gold/10 text-gold border border-gold/25 hover:bg-gold/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer text-center"
+                        >
+                          Auction
+                        </button>
+                        <button
+                          onClick={() => handleAddToQueue(first)}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-blue-500/10 text-blue-400 border border-blue-500/25 hover:bg-blue-500/20 transition-all cursor-pointer text-center"
+                        >
+                          + Queue
+                        </button>
+                      </>
+                    )}
+                    {pairStatus === "queued" && (
+                      <button
+                        onClick={() => handleRemoveFromQueue(first.id)}
+                        className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
+                      >
+                        Remove Queue
+                      </button>
+                    )}
+                    {pairStatus === "in-auction" && (
+                      <button
+                        onClick={handleCancelAuction}
+                        className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-accent-red/10 text-accent-red border border-accent-red/25 hover:bg-accent-red/20 transition-all cursor-pointer text-center"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    {pairStatus === "sold" && (
+                      <button
+                        onClick={() => handleResetPlayer(first.id)}
+                        className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted-foreground border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
+                      >
+                        Reset Status
+                      </button>
+                    )}
+                    {pairStatus === "unsold" && (
+                      <>
+                        <button
+                          onClick={() => handleSelectPlayer(first)}
+                          disabled={!!currentPlayer}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-bold rounded bg-gold/10 text-gold border border-gold/25 hover:bg-gold/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer text-center"
+                        >
+                          Re-auction
+                        </button>
+                        <button
+                          onClick={() => handleResetPlayer(first.id)}
+                          className="flex-1 py-1.5 text-[10px] sm:text-xs font-semibold rounded bg-white/[0.05] text-muted border border-white/[0.08] hover:bg-white/[0.1] hover:text-foreground transition-all cursor-pointer text-center"
+                        >
+                          Reset
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            players
               .filter((p) => {
                 if (activeTab === "available") {
                   return (p.status === "available" || p.status === "queued" || p.status === "in-auction") && p.gender !== "female";
@@ -900,7 +1027,8 @@ export default function AdminPage() {
                     </div>
                   </div>
                 );
-              })}
+              })
+          )}
           </div>
         </div>
       </section>

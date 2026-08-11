@@ -89,41 +89,41 @@ export const DEFAULT_PLAYERS = [
   { id: "c11-85", name: "SWASTIK AGRAWAL", activity: "CRICKET", gender: "male", status: "available" },
 
   { id: "c11-86", name: "SPARSH DOSI", activity: "ATHLETICS", gender: "male", status: "available" },
-  { id: "c11-87", name: "VIVAN JAIN", activity: "JUDO", gender: "male", status: "available" },
-  { id: "c11-88", name: "RITIK GOSHI", activity: "JUDO", gender: "male", status: "available" },
-  { id: "c11-89", name: "BHAVYANSH GERA", activity: "ATHLETICS", gender: "male", status: "available" },
-  { id: "c11-90", name: "KAVISH BURNWAL", activity: "SHOOTING", gender: "male", status: "available" },
-  { id: "c11-91", name: "OMADITYA SINGH", activity: "CRICKET", gender: "male", status: "available" },
+  { id: "c11-87", name: "RITIK GOSHI", activity: "JUDO", gender: "male", status: "available" },
+  { id: "c11-88", name: "BHAVYANSH GERA", activity: "ATHLETICS", gender: "male", status: "available" },
+  { id: "c11-89", name: "KAVISH BURNWAL", activity: "SHOOTING", gender: "male", status: "available" },
+  { id: "c11-90", name: "OMADITYA SINGH", activity: "CRICKET", gender: "male", status: "available" },
 
-  { id: "c11-92", name: "AARAV JAISWAL", activity: "HANDBALL", gender: "male", status: "available" },
-  { id: "c11-93", name: "NAMAN JAAT", activity: "SKATING", gender: "male", status: "available" },
-  { id: "c11-94", name: "ANAY GUPTA", activity: "SKATING", gender: "male", status: "available" },
-  { id: "c11-95", name: "SOUMYA SAND", activity: "SKATING", gender: "male", status: "available" },
-
-  
-  { id: "c11-96", name: "ANMOL YADAV", activity: "SWIMMING", gender: "male", status: "available" },
-  { id: "c11-97", name: "HARSHVARDHAN SINGH", activity: "ATHLETICS", gender: "male", status: "available" },
-  { id: "c11-98", name: "UTKARSH RAJ KATARA", activity: "VOLLEYBALL", gender: "male", status: "available" },
-  { id: "c11-99", name: "ANAY SHARMA", activity: "GOLF", gender: "male", status: "available" },
+  { id: "c11-91", name: "AARAV JAISWAL", activity: "HANDBALL", gender: "male", status: "available" },
+  { id: "c11-92", name: "NAMAN JAAT", activity: "SKATING", gender: "male", status: "available" },
+  { id: "c11-93", name: "ANAY GUPTA", activity: "SKATING", gender: "male", status: "available" },
+  { id: "c11-94", name: "SOUMYA SAND", activity: "SKATING", gender: "male", status: "available" },
 
   
+  { id: "c11-95", name: "ANMOL YADAV", activity: "SWIMMING", gender: "male", status: "available" },
+  { id: "c11-96", name: "HARSHVARDHAN SINGH", activity: "ATHLETICS", gender: "male", status: "available" },
+  { id: "c11-97", name: "UTKARSH RAJ KATARA", activity: "VOLLEYBALL", gender: "male", status: "available" },
+  { id: "c11-98", name: "ANAY SHARMA", activity: "GOLF", gender: "male", status: "available" },
 
-  { id: "c11-100", name: "KAVNAV CHAURASIYA", activity: "NETBALL", gender: "male", status: "available" },
   
-  { id: "c11-101", name: "RAGHAV MAHEWESHARI", activity: "FOOTBALL", gender: "male", status: "available" },
 
-  { id: "c11-102", name: "REYANSH VERMA", activity: "TAEKWONDO", gender: "male", status: "available" },
+  { id: "c11-99", name: "KAVNAV CHAURASIYA", activity: "NETBALL", gender: "male", status: "available" },
+  
+  { id: "c11-100", name: "RAGHAV MAHEWESHARI", activity: "FOOTBALL", gender: "male", status: "available" },
+
+  { id: "c11-101", name: "REYANSH VERMA", activity: "TAEKWONDO", gender: "male", status: "available" },
 
 
-  { id: "c11-103", name: "SHIVANSH AGRAWAL", activity: "TABLE TENNIS", gender: "male", status: "available" },
-  { id: "c11-104", name: "RAKSH SINGH", activity: "BASKETBALL", gender: "male", status: "available" },
+  { id: "c11-102", name: "SHIVANSH AGRAWAL", activity: "TABLE TENNIS", gender: "male", status: "available" },
+  { id: "c11-103", name: "RAKSH SINGH", activity: "BASKETBALL", gender: "male", status: "available" },
 
-  { id: "c11-105", name: "VANSH KATORIYA", activity: "VOLLEYBALL", gender: "male", status: "available" },
-  { id: "c11-106", name: "SHOURYA RANIAN", activity: "FOOTBALL", gender: "male", status: "available" },
-  { id: "c11-107", name: "DHANRAI AGRAWAL", activity: "SWIMMING", gender: "male", status: "available" },
-  { id: "c11-108", name: "ABDEALI MURAD", activity: "JUDO", gender: "male", status: "available" },
-  { id: "c11-109", name: "NAVOL SINGH", activity: "HANDBALL", gender: "male", status: "available" },
-  { id: "c11-110", name: "YASH KUMAR AGRAWAL", activity: "SQUASH", gender: "male", status: "available" },
+  { id: "c11-104", name: "VANSH KATORIYA", activity: "VOLLEYBALL", gender: "male", status: "available" },
+  { id: "c11-105", name: "SHOURYA RANIAN", activity: "FOOTBALL", gender: "male", status: "available" },
+  { id: "c11-106", name: "DHANRAI AGRAWAL", activity: "SWIMMING", gender: "male", status: "available" },
+  { id: "c11-107", name: "ABDEALI MURAD", activity: "JUDO", gender: "male", status: "available" },
+  { id: "c11-108", name: "NAVOL SINGH", activity: "HANDBALL", gender: "male", status: "available" },
+  { id: "c11-109", name: "YASH KUMAR AGRAWAL", activity: "SQUASH", gender: "male", status: "available" },
+  { id: "c11-110", name: "PARTH GUPTA", activity: "ATHLETICS", gender: "male", status: "available" },
 
 
   // Class 12 Players
@@ -164,47 +164,45 @@ export const DEFAULT_PLAYERS = [
   { id: "c12-35", name: "TAKSHVARDHAN SINGH KHICHI", activity: "JUDO", gender: "male", prevTeam: "SHOORVEER", status: "available" },
   { id: "c12-36", name: "VISHESH JAIN", activity: "BASKETBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
   { id: "c12-37", name: "YUJRAJ KHERODIYA", activity: "FOOTBALL", gender: "male", prevTeam: "KSHATRIYA", status: "available" },
-  { id: "c12-38", name: "RAUNAK AGRAWAL", activity: "ATHLETICS", gender: "male", status: "available" },
-  { id: "c12-39", name: "RISHIT GUPTA", activity: "CHESS", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
-  { id: "c12-40", name: "RUDRANSH AGRAWAL", activity: "TABLE TENNIS", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
-  { id: "c12-41", name: "RUTRAJ JAIN", activity: "MUSIC", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
-    { id: "c12-42", name: "SHOURYA KEDIA", activity: "TAEKWONDO", gender: "male", status: "available" },
-  { id: "c12-43", name: "VYOM CHANDAK", activity: "BASKETBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
-  { id: "c12-44", name: "YASH JHUNJHUNWALA", activity: "BASKETBALL", gender: "male", status: "available" },
-  { id: "c12-45", name: "ADITYA AGRAWAL", activity: "TABLE TENNIS", gender: "male", status: "available" },
-  { id: "c12-46", name: "ADITYA SACHIN AGRAWAL", activity: "GOLF", gender: "male", prevTeam: "DHRUVA", status: "available" },
-  { id: "c12-47", name: "DAKSHDITYA SINGH JHALA", activity: "JUDO", gender: "male", prevTeam: "DHRUVA", status: "available" },
-  { id: "c12-48", name: "IKSHIT AGRAWAL", activity: "TAEKWONDO", gender: "male", prevTeam: "YODHA", status: "available" },
-  { id: "c12-49", name: "OMESHWAR SINGH DANGI", activity: "TAEKWONDO", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
-  { id: "c12-50", name: "RIDHAM SINGHAL", activity: "TAEKWONDO", gender: "male", status: "available" },
-  { id: "c12-51", name: "SAMYAK AGRAWAL", activity: "JUDO", gender: "male", status: "available" },
-  { id: "c12-52", name: "SHUBH JAIN", activity: "BASKETBALL", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
-  { id: "c12-53", name: "SIDDHAM NANDECHA", activity: "TENNIS", gender: "male", prevTeam: "SHOORVEER", status: "available" },
-  { id: "c12-54", name: "SYED AATIF HUSSAIN", activity: "SQUASH", gender: "male", prevTeam: "RANBHOOMIBHOOMI", status: "available" },
-  { id: "c12-55", name: "AARAV JAIN", activity: "ATHLETICS", gender: "male", prevTeam: "YODHA", status: "available" },
-  { id: "c12-56", name: "ARTH AGRAWAL", activity: "JUDO", gender: "male", prevTeam: "KURUKSHETRA", status: "available" },
-  { id: "c12-57", name: "DAKSH AGRAWAL", activity: "JUDO", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
-  { id: "c12-58", name: "MUDIT MAHAJAN", activity: "HANDBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
-  { id: "c12-59", name: "PARV AGRAWAL", activity: "TABLE TENNIS", gender: "male", status: "available" },
-  { id: "c12-60", name: "MANAS SONI", activity: "FOOTBALL", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
-  { id: "c12-61", name: "SANSKAR JAIN", activity: "THROWBALL", gender: "male", prevTeam: "RANBHOOMI", status: "available" },
-  { id: "c12-62", name: "YASHKRITYA MISHRA", activity: "FOOTBALL", gender: "male", status: "available" },
-  { id: "c12-63", name: "YATHARTH JAIN", activity: "ATHLETICS", gender: "male", status: "available" },
-  { id: "c12-64", name: "YUVRAJ AGRAWAL", activity: "THROWBALL", gender: "male", prevTeam: "KURUKSHETRA", status: "available" },
-  { id: "c12-65", name: "AADARSH AGRAWAL", activity: "HANDBALL", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
-  { id: "c12-66", name: "ARHAM JAIN", activity: "FOOTBALL", gender: "male", prevTeam: "RANBHOOMI", status: "available" },
-  { id: "c12-67", name: "ARYAVEER GOYAL", activity: "HANDBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
-  { id: "c12-68", name: "KESHAV SOMANI", activity: "VOLLEYBALL", gender: "male", prevTeam: "KSHATRIYA", status: "available" },
-  { id: "c12-69", name: "RAGHAV PATIDAR", activity: "ATHLETICS", gender: "male", prevTeam: "SAMRAT", status: "available" },
-  { id: "c12-70", name: "SAMARTH GARG", activity: "BASKETBALL", gender: "male", status: "available" },
+  { id: "c12-38", name: "RISHIT GUPTA", activity: "CHESS", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
+  { id: "c12-39", name: "RUDRANSH AGRAWAL", activity: "TABLE TENNIS", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
+  { id: "c12-40", name: "RUTRAJ JAIN", activity: "MUSIC", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
+    { id: "c12-41", name: "SHOURYA KEDIA", activity: "TAEKWONDO", gender: "male", status: "available" },
+  { id: "c12-42", name: "VYOM CHANDAK", activity: "BASKETBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
+  { id: "c12-43", name: "YASH JHUNJHUNWALA", activity: "BASKETBALL", gender: "male", status: "available" },
+  { id: "c12-44", name: "ADITYA AGRAWAL", activity: "TABLE TENNIS", gender: "male", status: "available" },
+  { id: "c12-45", name: "ADITYA SACHIN AGRAWAL", activity: "GOLF", gender: "male", prevTeam: "DHRUVA", status: "available" },
+  { id: "c12-46", name: "DAKSHDITYA SINGH JHALA", activity: "JUDO", gender: "male", prevTeam: "DHRUVA", status: "available" },
+  { id: "c12-47", name: "IKSHIT AGRAWAL", activity: "TAEKWONDO", gender: "male", prevTeam: "YODHA", status: "available" },
+  { id: "c12-48", name: "OMESHWAR SINGH DANGI", activity: "TAEKWONDO", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
+  { id: "c12-49", name: "RIDHAM SINGHAL", activity: "TAEKWONDO", gender: "male", status: "available" },
+  { id: "c12-50", name: "SAMYAK AGRAWAL", activity: "JUDO", gender: "male", status: "available" },
+  { id: "c12-51", name: "SHUBH JAIN", activity: "BASKETBALL", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
+  { id: "c12-52", name: "SIDDHAM NANDECHA", activity: "TENNIS", gender: "male", prevTeam: "SHOORVEER", status: "available" },
+  { id: "c12-53", name: "SYED AATIF HUSSAIN", activity: "SQUASH", gender: "male", prevTeam: "RANBHOOMIBHOOMI", status: "available" },
+  { id: "c12-54", name: "AARAV JAIN", activity: "ATHLETICS", gender: "male", prevTeam: "YODHA", status: "available" },
+  { id: "c12-55", name: "ARTH AGRAWAL", activity: "JUDO", gender: "male", prevTeam: "KURUKSHETRA", status: "available" },
+  { id: "c12-56", name: "DAKSH AGRAWAL", activity: "JUDO", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
+  { id: "c12-57", name: "MUDIT MAHAJAN", activity: "HANDBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
+  { id: "c12-58", name: "PARV AGRAWAL", activity: "TABLE TENNIS", gender: "male", status: "available" },
+  { id: "c12-59", name: "MANAS SONI", activity: "FOOTBALL", gender: "male", prevTeam: "AGNIASTRA", status: "available" },
+  { id: "c12-60", name: "SANSKAR JAIN", activity: "THROWBALL", gender: "male", prevTeam: "RANBHOOMI", status: "available" },
+  { id: "c12-61", name: "YASHKRITYA MISHRA", activity: "FOOTBALL", gender: "male", status: "available" },
+  { id: "c12-62", name: "YATHARTH JAIN", activity: "ATHLETICS", gender: "male", status: "available" },
+  { id: "c12-63", name: "YUVRAJ AGRAWAL", activity: "THROWBALL", gender: "male", prevTeam: "KURUKSHETRA", status: "available" },
+  { id: "c12-64", name: "AADARSH AGRAWAL", activity: "HANDBALL", gender: "male", prevTeam: "RAJTANTRA", status: "available" },
+  { id: "c12-65", name: "ARHAM JAIN", activity: "FOOTBALL", gender: "male", prevTeam: "RANBHOOMI", status: "available" },
+  { id: "c12-66", name: "ARYAVEER GOYAL", activity: "HANDBALL", gender: "male", prevTeam: "SAMRAT", status: "available" },
+  { id: "c12-67", name: "KESHAV SOMANI", activity: "VOLLEYBALL", gender: "male", prevTeam: "KSHATRIYA", status: "available" },
+  { id: "c12-68", name: "RAGHAV PATIDAR", activity: "ATHLETICS", gender: "male", prevTeam: "SAMRAT", status: "available" },
 
-  { id: "c12-71", name: "AAYUSHMAN AGRAWAL", activity: "HOCKEY", gender: "male", prevTeam: "SHOORVEER", status: "available" },
-  { id: "c12-72", name: "BHARAT KHATRI", activity: "BADMINTON", gender: "male", status: "available" },
+  { id: "c12-69", name: "AAYUSHMAN AGRAWAL", activity: "HOCKEY", gender: "male", prevTeam: "SHOORVEER", status: "available" },
+  { id: "c12-70", name: "BHARAT KHATRI", activity: "BADMINTON", gender: "male", status: "available" },
   // Female Players
   { id: "f-01", name: "SAMRIDDHI AGRAWAL", activity: "BASKETBALL", gender: "female", status: "available" },
   { id: "f-02", name: "RAGHAVI KHANDELWAL", activity: "JUDO", gender: "female", status: "available" },
   { id: "f-03", name: "SIDDHI PIPARSANIYA", activity: "WALL CLIMBING", gender: "female", status: "available" },
-  { id: "f-04", name: "JIYA JAIN", activity: "SWIMMING", gender: "female", status: "available" },
+  { id: "f-15", name: "JIYA JAIN", activity: "SWIMMING", gender: "female", status: "available" },
   { id: "f-05", name: "SAMAIRA SARIN", activity: "SWIMMING", gender: "female", status: "available" },
   { id: "f-06", name: "JANVI YADAV", activity: "BASKETBALL", gender: "female", status: "available" },
   { id: "f-07", name: "AKSHARA SINGH", activity: "VOLLEYBALL", gender: "female", status: "available" },
@@ -215,11 +213,11 @@ export const DEFAULT_PLAYERS = [
   { id: "f-12", name: "KANAK JAIN", activity: "FOOTBALL", gender: "female", status: "available" },
   { id: "f-13", name: "SIDDHI PATEL", activity: "KARATE", gender: "female", status: "available" },
   { id: "f-14", name: "UNNATI JHAWAR", activity: "SKATING", gender: "female", status: "available" },
-  { id: "f-15", name: "JIYA LILANI", activity: "SHOOTING", gender: "female", status: "available" },
+  { id: "f-04", name: "JIYA LILANI", activity: "SHOOTING", gender: "female", status: "available" },
   { id: "f-16", name: "KATYAYANI SAKTAWAT", activity: "SQUASH", gender: "female", status: "available" },
   { id: "f-17", name: "NANDINI AGRAWAL", activity: "KARATE", gender: "female", status: "available" },
   { id: "f-18", name: "CHAHAK KHURANA", activity: "SQUASH", gender: "female", status: "available" },
-  { id: "f-19", name: "AVANI AGRAWAL", activity: "SWIMMING", gender: "female", status: "available" },
+  { id: "f-19", name: "AAVANI AGRAWAL", activity: "THROWBALL", gender: "female", status: "available" },
   { id: "f-20", name: "SAMARADHI SAHEWALA", activity: "ATHLETICS", gender: "female", status: "available" },
   { id: "f-21", name: "VRINDA AGRAWAL", activity: "ATHLETICS", gender: "female", status: "available" },
   { id: "f-22", name: "APEKSHA PORWAL", activity: "SWIMMING", gender: "female", status: "available" },
@@ -230,9 +228,29 @@ export const DEFAULT_PLAYERS = [
 export const PLAYERS_STORAGE_KEY = "ehpl-auction-players";
 export const CURRENT_PLAYER_KEY = "ehpl-auction-current-player";
 
+export const FEMALE_PAIRS = [
+  ["f-15", "f-04"],
+  ["f-13", "f-03"],
+  ["f-07", "f-22"],
+  ["f-24", "f-19"],
+  ["f-09", "f-08"],
+  ["f-18", "f-11"],
+  ["f-06", "f-16"],
+  ["f-12", "f-17"],
+  ["f-02", "f-05"],
+  ["f-20", "f-01"],
+  ["f-10", "f-14"],
+  ["f-21", "f-23"],
+];
+
+export function getPairPartner(playerId) {
+  const pair = FEMALE_PAIRS.find((p) => p.includes(playerId));
+  return pair ? pair.find((id) => id !== playerId) : null;
+}
+
 /**
  * Get base price for a player
  */
 export function getBasePrice(player) {
-  return 20000;
+  return player?.unsoldOnce ? 50000 : 20000;
 }
