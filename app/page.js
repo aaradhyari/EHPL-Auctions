@@ -9,7 +9,13 @@ import {
   formatCurrency,
   formatCompactCurrency,
 } from "./lib/teams";
-import { CURRENT_PLAYER_KEY, getBasePrice } from "./lib/players";
+import {
+  CURRENT_PLAYER_KEY,
+  PLAYERS_STORAGE_KEY,
+  SHOW_TEAMS_KEY,
+  getBasePrice,
+  getSoldPlayerGroups,
+} from "./lib/players";
 
 const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
 
@@ -383,11 +389,89 @@ function PlayerCard({ player }) {
   );
 }
 
+const CATEGORY_STYLES = {
+  c12: { label: "CLASS 12", color: "#22c55e" },
+  c11: { label: "CLASS 11", color: "#3b82f6" },
+  female: { label: "FEMALE", color: "#ec4899" },
+};
+
+function TeamRosterColumn({ team, color, players }) {
+  const { c11, c12, female } = getSoldPlayerGroups(players, team.name);
+  const spent = TOTAL_PURSE - team.purse;
+
+  const categoryOf = (item) => {
+    if (item.id?.startsWith("c12")) return "c12";
+    if (item.id?.startsWith("c11")) return "c11";
+    return "female";
+  };
+
+  const allItems = [...c12, ...c11, ...female];
+  const totalCount = allItems.length;
+
+  return (
+    <div
+      className="relative flex flex-col rounded-2xl border bg-card-bg/60 backdrop-blur-sm overflow-hidden h-full"
+      style={{ borderColor: `${color.accent}35` }}
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: `linear-gradient(90deg, transparent, ${color.accent}, transparent)` }}
+      />
+      <div
+        className="p-4 sm:p-5 border-b"
+        style={{ background: `linear-gradient(135deg, ${color.accent}15, transparent)`, borderColor: `${color.accent}20` }}
+      >
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight uppercase" style={{ color: color.accent }}>
+          {team.name}
+        </h2>
+        <div className="flex items-center gap-4 mt-2 text-xs sm:text-sm">
+          <span className="text-muted">
+            Remaining: <span className="font-bold text-foreground">{formatCompactCurrency(team.purse)}</span>
+          </span>
+          <span className="text-muted">
+            Spent: <span className="font-bold" style={{ color: color.accent }}>{formatCompactCurrency(spent)}</span>
+          </span>
+          <span className="text-muted">
+            Players: <span className="font-bold text-foreground">{totalCount}</span>
+          </span>
+        </div>
+      </div>
+
+<div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-1 custom-scrollbar">
+        {allItems.map((item) => {
+          const style = CATEGORY_STYLES[categoryOf(item)];
+          return (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg border"
+              style={{ background: `${style.color}12`, borderColor: `${style.color}25` }}
+            >
+              <span className="text-sm sm:text-base font-semibold text-foreground truncate min-w-0">
+                {item.name}
+              </span>
+              <span className="text-xs sm:text-sm font-bold whitespace-nowrap" style={{ color: style.color }}>
+                {item.price ? formatCompactCurrency(item.price) : ""}
+              </span>
+            </div>
+          );
+        })}
+        {totalCount === 0 && (
+          <div className="text-center py-8 border border-dashed border-white/10 rounded-lg text-muted text-xs">
+            No players sold to this team yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function DisplayPage() {
   const [showIntro, setShowIntro] = useState(false);
   const [teams, setTeams] = useState(DEFAULT_TEAMS);
   const [updatedIds, setUpdatedIds] = useState(new Set());
   const [currentPlayer, setCurrentPlayer] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [showTeams, setShowTeams] = useState({ enabled: false, pairIndex: 0 });
 
   const loadTeams = useCallback(() => {
     try {
@@ -435,11 +519,35 @@ export default function DisplayPage() {
     }
   }, []);
 
+  const loadPlayers = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(PLAYERS_STORAGE_KEY);
+      if (stored) {
+        setPlayers(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load players:", e);
+    }
+  }, []);
+
+  const loadShowTeams = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(SHOW_TEAMS_KEY);
+      if (stored) {
+        setShowTeams(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load show-teams config:", e);
+    }
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       loadTeams();
       loadCurrentPlayer();
       loadIntroState();
+      loadPlayers();
+      loadShowTeams();
     }, 0);
 
     const handleStorage = (e) => {
@@ -452,6 +560,12 @@ export default function DisplayPage() {
       if (e.key === INTRO_VISIBLE_KEY) {
         loadIntroState();
       }
+      if (e.key === PLAYERS_STORAGE_KEY) {
+        loadPlayers();
+      }
+      if (e.key === SHOW_TEAMS_KEY) {
+        loadShowTeams();
+      }
     };
 
     window.addEventListener("storage", handleStorage);
@@ -460,6 +574,8 @@ export default function DisplayPage() {
       loadTeams();
       loadCurrentPlayer();
       loadIntroState();
+      loadPlayers();
+      loadShowTeams();
     }, 500);
 
     return () => {
@@ -467,7 +583,7 @@ export default function DisplayPage() {
       window.removeEventListener("storage", handleStorage);
       clearInterval(interval);
     };
-  }, [loadTeams, loadCurrentPlayer, loadIntroState]);
+  }, [loadTeams, loadCurrentPlayer, loadIntroState, loadPlayers, loadShowTeams]);
 
   // Calculate totals
   const totalRemaining = teams.reduce((sum, t) => sum + t.purse, 0);
@@ -476,6 +592,61 @@ export default function DisplayPage() {
 
   if (showIntro) {
     return <IntroScreen />;
+  }
+
+  const teamAPairIndex = Math.min(
+    Math.max(Number(showTeams.pairIndex) || 0, 0),
+    Math.floor((teams.length - 1) / 2)
+  );
+  const teamA = teams[teamAPairIndex * 2];
+  const teamB = teams[teamAPairIndex * 2 + 1];
+
+  if (showTeams.enabled && teamA && teamB) {
+    const colorA = TEAM_COLORS[(teamA.id - 1) % TEAM_COLORS.length];
+    const colorB = TEAM_COLORS[(teamB.id - 1) % TEAM_COLORS.length];
+    return (
+      <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
+        <header className="shrink-0 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 border-b border-card-border/50">
+          <div className="flex items-center justify-between max-w-[1920px] mx-auto">
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-gradient-gold glow-gold">
+                EHPL AUCTION
+              </h1>
+              <span className="text-[10px] sm:text-xs text-muted uppercase tracking-widest hidden sm:block">
+                Team Players
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest" style={{ color: colorA.accent }}>
+                {teamA.name}
+              </span>
+              <span className="text-xs font-black text-gold">VS</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest" style={{ color: colorB.accent }}>
+                {teamB.name}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 min-h-0 px-3 sm:px-5 lg:px-8 py-3 sm:py-4 overflow-hidden">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 h-full max-w-[1920px] mx-auto">
+            <TeamRosterColumn team={teamA} color={colorA} players={players} />
+            <TeamRosterColumn team={teamB} color={colorB} players={players} />
+          </div>
+        </main>
+
+        <footer className="shrink-0 px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2 border-t border-card-border/30">
+          <div className="flex items-center justify-between max-w-[1920px] mx-auto">
+            <p className="text-[10px] sm:text-xs text-muted">
+              Team Players View • {teamA.name} vs {teamB.name}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted hidden sm:block">
+              C12 <span className="text-green-400">●</span> C11 <span className="text-blue-400">●</span> Female <span className="text-pink-400">●</span>
+            </p>
+          </div>
+        </footer>
+      </div>
+    );
   }
 
   return (

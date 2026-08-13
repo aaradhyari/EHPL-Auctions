@@ -16,6 +16,7 @@ import {
   DEFAULT_PLAYERS,
   FEMALE_PAIRS,
   getPairPartner,
+  SHOW_TEAMS_KEY,
 } from "../lib/players";
 
 const INTRO_VISIBLE_KEY = "ehpl-intro-visible";
@@ -212,6 +213,11 @@ export default function AdminPage() {
   const [isSoldModalOpen, setIsSoldModalOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState("");
   const [soldPrice, setSoldPrice] = useState("");
+  const [isShowTeamsModalOpen, setIsShowTeamsModalOpen] = useState(false);
+  const [showTeamsConfig, setShowTeamsConfig] = useState({
+    enabled: false,
+    pairIndex: 0,
+  });
 
   // Load from localStorage asynchronously to avoid synchronous setState warnings in useEffect
   useEffect(() => {
@@ -241,6 +247,15 @@ export default function AdminPage() {
         }
 
         setIntroVisible(localStorage.getItem(INTRO_VISIBLE_KEY) === "1");
+
+        const storedShowTeams = localStorage.getItem(SHOW_TEAMS_KEY);
+        if (storedShowTeams) {
+          const parsedShowTeams = JSON.parse(storedShowTeams);
+          setShowTeamsConfig({
+            enabled: !!parsedShowTeams.enabled,
+            pairIndex: typeof parsedShowTeams.pairIndex === "number" ? parsedShowTeams.pairIndex : 0,
+          });
+        }
       } catch (e) {
         console.error("Failed to load initial state:", e);
       }
@@ -281,6 +296,22 @@ export default function AdminPage() {
       console.error("Failed to save current player:", e);
     }
   }, []);
+
+  const saveShowTeams = useCallback((config) => {
+    setShowTeamsConfig(config);
+    try {
+      localStorage.setItem(SHOW_TEAMS_KEY, JSON.stringify(config));
+    } catch (e) {
+      console.error("Failed to save show-teams config:", e);
+    }
+  }, []);
+
+  const showTeamsPairIndex = Math.min(
+    Math.max(showTeamsConfig.pairIndex, 0),
+    Math.floor((teams.length - 1) / 2)
+  );
+  const showTeamsTeamA = teams[showTeamsPairIndex * 2];
+  const showTeamsTeamB = teams[showTeamsPairIndex * 2 + 1];
 
   const handleUpdate = useCallback(
     (id, newPurse) => {
@@ -618,6 +649,27 @@ export default function AdminPage() {
                   />
                 </button>
               </div>
+
+              <button
+                onClick={() => {
+                  saveShowTeams({ enabled: true, pairIndex: 0 });
+                  setIsShowTeamsModalOpen(true);
+                }}
+                className={`flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-bold rounded-lg border transition-all duration-150 cursor-pointer ${
+                  showTeamsConfig.enabled
+                    ? "bg-accent-green/15 text-accent-green border-accent-green/30 hover:bg-accent-green/25"
+                    : "bg-white/[0.03] text-muted border-white/[0.08] hover:bg-white/[0.08] hover:text-foreground"
+                }`}
+                title="Show team players on the display"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Show Team Players
+                {showTeamsConfig.enabled && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
+                )}
+              </button>
 
               {/* Summary Stats */}
               <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
@@ -1062,6 +1114,77 @@ export default function AdminPage() {
           </Link>
         </div>
       </footer>
+
+      {/* Show Team Players Modal */}
+      {isShowTeamsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 sm:p-8 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-card-bg border border-card-border rounded-3xl p-6 sm:p-8 w-full max-w-lg shadow-2xl animate-scale-up-bounce">
+            <div className="mb-6">
+              <p className="text-xs sm:text-sm text-muted uppercase tracking-widest mb-2">Display Control</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-gradient-gold leading-tight">
+                Show Team Players
+              </h3>
+              <p className="text-xs text-muted mt-2">
+                The display shows teams in pairs automatically — use Next / Prev to change them.
+              </p>
+            </div>
+
+            <div className="mb-6 px-5 py-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-center">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">
+                Now Showing
+              </p>
+              <div className="flex items-center justify-center gap-3 sm:gap-4">
+                <span
+                  className="text-xl sm:text-2xl font-black uppercase tracking-tight"
+                  style={{ color: TEAM_COLORS[(showTeamsTeamA.id - 1) % TEAM_COLORS.length].accent }}
+                >
+                  {showTeamsTeamA.name}
+                </span>
+                <span className="text-base sm:text-lg font-black text-gold">VS</span>
+                <span
+                  className="text-xl sm:text-2xl font-black uppercase tracking-tight"
+                  style={{ color: TEAM_COLORS[(showTeamsTeamB.id - 1) % TEAM_COLORS.length].accent }}
+                >
+                  {showTeamsTeamB.name}
+                </span>
+              </div>
+              <p className="text-[10px] text-muted mt-3 uppercase tracking-wider">
+                Pair {showTeamsPairIndex + 1} of {Math.ceil(teams.length / 2)}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => saveShowTeams({ enabled: true, pairIndex: showTeamsPairIndex - 1 })}
+                disabled={showTeamsPairIndex === 0}
+                className="flex-1 py-4 text-sm sm:text-base font-bold rounded-xl bg-white/5 text-muted border border-white/10 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                ← Prev Teams
+              </button>
+              <button
+                type="button"
+                onClick={() => saveShowTeams({ enabled: true, pairIndex: showTeamsPairIndex + 1 })}
+                disabled={showTeamsPairIndex >= Math.floor((teams.length - 1) / 2)}
+                className="flex-1 py-4 text-sm sm:text-base font-bold rounded-xl bg-gold/15 text-gold border border-gold/25 hover:bg-gold/25 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                Next Teams →
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                saveShowTeams({ enabled: false, pairIndex: 0 });
+                setIsShowTeamsModalOpen(false);
+              }}
+              className="w-full mt-3 py-4 text-sm sm:text-base font-black rounded-xl bg-accent-red/10 text-accent-red border border-accent-red/25 hover:bg-accent-red/20 transition-all cursor-pointer"
+            >
+              Close (Stop Display)
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Sold Modal */}
       {isSoldModalOpen && (
