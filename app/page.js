@@ -6,6 +6,7 @@ import {
   DEFAULT_TEAMS,
   TEAM_COLORS,
   STORAGE_KEY,
+  TEACHERS_KEY,
   formatCurrency,
   formatCompactCurrency,
 } from "./lib/teams";
@@ -369,6 +370,55 @@ const CATEGORY_STYLES = {
   female: { label: "FEMALE", color: "#ec4899" },
 };
 
+function TeachersView({ teams, teachers }) {
+  return (
+    <div className="flex-1 min-h-0 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 overflow-y-auto custom-scrollbar">
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        {teams.map((team, index) => {
+          const color = TEAM_COLORS[index % TEAM_COLORS.length];
+          const teacher = teachers[team.id] || "";
+          return (
+            <div
+              key={team.id}
+              className="relative flex items-center justify-between gap-4 px-5 sm:px-7 py-4 sm:py-5 rounded-2xl border bg-card-bg/60 backdrop-blur-sm animate-slide-in"
+              style={{
+                animationDelay: `${index * 50}ms`,
+                borderColor: `${color.accent}35`,
+                background: `linear-gradient(135deg, ${color.accent}12 0%, #12121a 55%, ${color.accent}05 100%)`,
+              }}
+            >
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px]"
+                style={{ background: `linear-gradient(90deg, transparent, ${color.accent}, transparent)` }}
+              />
+              <div className="flex items-center gap-3 min-w-0">
+                <span
+                  className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl text-xs sm:text-sm font-black shrink-0"
+                  style={{ background: `${color.accent}18`, color: color.accent, border: `1px solid ${color.accent}35` }}
+                >
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-widest">Team</p>
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight uppercase truncate" style={{ color: color.accent }}>
+                    {team.name}
+                  </h2>
+                </div>
+              </div>
+              <div className="text-right min-w-0">
+                <p className="text-[9px] sm:text-[10px] text-muted uppercase tracking-widest">Teacher</p>
+                <p className={`text-base sm:text-lg lg:text-xl font-extrabold tracking-wide truncate ${teacher ? "" : "text-muted/60 italic font-semibold"}`}>
+                  {teacher || "TBA"}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function TeamRosterColumn({ team, color, players }) {
   const { c11, c12, female } = getSoldPlayerGroups(players, team.name);
   const spent = TOTAL_PURSE - team.purse;
@@ -446,6 +496,7 @@ export default function DisplayPage() {
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [players, setPlayers] = useState([]);
   const [showTeams, setShowTeams] = useState({ enabled: false, pairIndex: 0 });
+  const [teacherConfig, setTeacherConfig] = useState({ enabled: false, teachers: {} });
 
   const loadTeams = useCallback(() => {
     try {
@@ -515,6 +566,18 @@ export default function DisplayPage() {
     }
   }, []);
 
+  const loadTeacherConfig = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(TEACHERS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setTeacherConfig({ enabled: !!parsed.enabled, teachers: parsed.teachers || {} });
+      }
+    } catch (e) {
+      console.error("Failed to load teacher config:", e);
+    }
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       loadTeams();
@@ -522,6 +585,7 @@ export default function DisplayPage() {
       loadIntroState();
       loadPlayers();
       loadShowTeams();
+      loadTeacherConfig();
     }, 0);
 
     const handleStorage = (e) => {
@@ -540,6 +604,9 @@ export default function DisplayPage() {
       if (e.key === SHOW_TEAMS_KEY) {
         loadShowTeams();
       }
+      if (e.key === TEACHERS_KEY) {
+        loadTeacherConfig();
+      }
     };
 
     window.addEventListener("storage", handleStorage);
@@ -550,6 +617,7 @@ export default function DisplayPage() {
       loadIntroState();
       loadPlayers();
       loadShowTeams();
+      loadTeacherConfig();
     }, 500);
 
     return () => {
@@ -557,7 +625,7 @@ export default function DisplayPage() {
       window.removeEventListener("storage", handleStorage);
       clearInterval(interval);
     };
-  }, [loadTeams, loadCurrentPlayer, loadIntroState, loadPlayers, loadShowTeams]);
+  }, [loadTeams, loadCurrentPlayer, loadIntroState, loadPlayers, loadShowTeams, loadTeacherConfig]);
 
   // Calculate totals
   const totalRemaining = teams.reduce((sum, t) => sum + t.purse, 0);
@@ -566,6 +634,36 @@ export default function DisplayPage() {
 
   if (showIntro) {
     return <IntroScreen />;
+  }
+
+  if (teacherConfig.enabled) {
+    return (
+      <div className="h-screen w-screen overflow-hidden bg-background flex flex-col">
+        <header className="shrink-0 px-4 sm:px-6 lg:px-8 py-2 sm:py-3 border-b border-card-border/50">
+          <div className="flex items-center justify-between max-w-[1920px] mx-auto">
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-gradient-gold glow-gold">
+                EHPL AUCTION
+              </h1>
+              <span className="text-[10px] sm:text-xs text-muted uppercase tracking-widest hidden sm:block">
+                Team Teachers
+              </span>
+            </div>
+            <p className="text-[10px] sm:text-xs text-muted uppercase tracking-widest">
+              Season 9 · 2026
+            </p>
+          </div>
+        </header>
+        <TeachersView teams={teams} teachers={teacherConfig.teachers} />
+        <footer className="shrink-0 px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2 border-t border-card-border/30">
+          <div className="flex items-center justify-between max-w-[1920px] mx-auto">
+            <p className="text-[10px] sm:text-xs text-muted">
+              Team Teachers View • {teams.length} Teams
+            </p>
+          </div>
+        </footer>
+      </div>
+    );
   }
 
   const teamAPairIndex = Math.min(

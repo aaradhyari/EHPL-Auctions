@@ -7,6 +7,8 @@ import {
   DEFAULT_TEAMS,
   TEAM_COLORS,
   STORAGE_KEY,
+  TEACHERS_KEY,
+  TEACHER_NAMES,
   formatCurrency,
   formatCompactCurrency,
 } from "../lib/teams";
@@ -216,6 +218,11 @@ export default function AdminPage() {
     enabled: false,
     pairIndex: 0,
   });
+  const [isTeachersModalOpen, setIsTeachersModalOpen] = useState(false);
+  const [teacherConfig, setTeacherConfig] = useState({
+    enabled: false,
+    teachers: {},
+  });
 
   // Load from localStorage asynchronously to avoid synchronous setState warnings in useEffect
   useEffect(() => {
@@ -252,6 +259,15 @@ export default function AdminPage() {
           setShowTeamsConfig({
             enabled: !!parsedShowTeams.enabled,
             pairIndex: typeof parsedShowTeams.pairIndex === "number" ? parsedShowTeams.pairIndex : 0,
+          });
+        }
+
+        const storedTeachers = localStorage.getItem(TEACHERS_KEY);
+        if (storedTeachers) {
+          const parsedTeachers = JSON.parse(storedTeachers);
+          setTeacherConfig({
+            enabled: !!parsedTeachers.enabled,
+            teachers: parsedTeachers.teachers || {},
           });
         }
       } catch (e) {
@@ -301,6 +317,15 @@ export default function AdminPage() {
       localStorage.setItem(SHOW_TEAMS_KEY, JSON.stringify(config));
     } catch (e) {
       console.error("Failed to save show-teams config:", e);
+    }
+  }, []);
+
+  const saveTeacherConfig = useCallback((config) => {
+    setTeacherConfig(config);
+    try {
+      localStorage.setItem(TEACHERS_KEY, JSON.stringify(config));
+    } catch (e) {
+      console.error("Failed to save teacher config:", e);
     }
   }, []);
 
@@ -639,6 +664,27 @@ export default function AdminPage() {
                   />
                 </button>
               </div>
+
+              <button
+                onClick={() => {
+                  saveTeacherConfig({ ...teacherConfig, enabled: true });
+                  setIsTeachersModalOpen(true);
+                }}
+                className={`flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-bold rounded-lg border transition-all duration-150 cursor-pointer ${
+                  teacherConfig.enabled
+                    ? "bg-accent-green/15 text-accent-green border-accent-green/30 hover:bg-accent-green/25"
+                    : "bg-white/[0.03] text-muted border-white/[0.08] hover:bg-white/[0.08] hover:text-foreground"
+                }`}
+                title="Pair teacher names with teams and show them on the display"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                </svg>
+                Team Teachers
+                {teacherConfig.enabled && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
+                )}
+              </button>
 
               <button
                 onClick={() => {
@@ -988,6 +1034,104 @@ export default function AdminPage() {
           </Link>
         </div>
       </footer>
+
+      {/* Team Teachers Modal */}
+      {isTeachersModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-5 sm:p-8 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-card-bg border border-card-border rounded-3xl p-6 sm:p-8 w-full max-w-2xl shadow-2xl animate-scale-up-bounce max-h-[90vh] flex flex-col">
+            <div className="mb-5">
+              <p className="text-xs sm:text-sm text-muted uppercase tracking-widest mb-2">Display Control</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-gradient-gold leading-tight">
+                Team Teachers
+              </h3>
+              <p className="text-xs text-muted mt-2">
+                Enter a teacher name for each team — the display will show all 12 team & teacher pairs in one view.
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2">
+              {teams.map((team) => {
+                const color = TEAM_COLORS[(team.id - 1) % TEAM_COLORS.length];
+                return (
+                  <div
+                    key={team.id}
+                    className="flex items-center gap-3 px-3 py-2 rounded-xl border"
+                    style={{ background: `${color.accent}0D`, borderColor: `${color.accent}22` }}
+                  >
+                    <span className="w-24 sm:w-32 shrink-0 text-sm font-black uppercase tracking-wide" style={{ color: color.accent }}>
+                      {team.name}
+                    </span>
+                    <select
+                      value={teacherConfig.teachers[team.id] || ""}
+                      onChange={(e) => {
+                        const newConfig = {
+                          ...teacherConfig,
+                          enabled: true,
+                          teachers: { ...teacherConfig.teachers, [team.id]: e.target.value },
+                        };
+                        saveTeacherConfig(newConfig);
+                      }}
+                      className="flex-1 px-3 py-2 text-sm rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all duration-200"
+                    >
+                      <option value="">Select teacher...</option>
+                      {TEACHER_NAMES.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-card-border space-y-3">
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                <span className="text-sm font-bold text-foreground">Show on Display</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={teacherConfig.enabled}
+                  onClick={() => setTeacherConfig({ ...teacherConfig, enabled: !teacherConfig.enabled })}
+                  className={`relative h-5 w-10 rounded-full border transition-all duration-200 cursor-pointer ${
+                    teacherConfig.enabled
+                      ? "bg-accent-green/25 border-accent-green/50"
+                      : "bg-white/[0.04] border-white/[0.12]"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full transition-all duration-200 ${
+                      teacherConfig.enabled
+                        ? "left-[21px] bg-accent-green shadow-[0_0_12px_rgba(34,197,94,0.45)]"
+                        : "left-1 bg-muted"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsTeachersModalOpen(false)}
+                  className="flex-1 py-3 text-sm font-bold rounded-xl bg-white/5 text-muted border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    saveTeacherConfig(teacherConfig);
+                    setIsTeachersModalOpen(false);
+                  }}
+                  className="flex-1 py-3 text-sm font-black rounded-xl bg-gold text-black hover:bg-gold/90 active:scale-95 transition-all cursor-pointer"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Show Team Players Modal */}
       {isShowTeamsModalOpen && (

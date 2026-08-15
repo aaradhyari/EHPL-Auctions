@@ -32,6 +32,23 @@ export const TEAM_COLORS = [
 
 export const STORAGE_KEY = "ehpl-auction-teams";
 
+export const TEACHERS_KEY = "ehpl-team-teachers";
+
+export const TEACHER_NAMES = [
+  "SWAMYADEEP SIR",
+  "SWAPNIL SIR",
+  "ARPIT SIR",
+  "ARUN SIR",
+  "OMPRAKASH SIR",
+  "KHUSHAL SIR",
+  "AKHILESH SIR",
+  "PERVEZ SIR",
+  "RAVINDRA GUPTA",
+  "SHIV SIR",
+  "KULDEEP SIR",
+  "ARIF KHAN SIR",
+];
+
 export function formatCurrency(amount) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
